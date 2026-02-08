@@ -25,7 +25,9 @@ const FoodPartnerRegister = () => {
       email,
       password,
       address
-    }, { withCredentials: true })
+    },
+    //ye line likhne se cookies ke andar token store hota hai jabb axios use karte hai
+    { withCredentials: true })
       .then(response => {
         console.log(response.data);
         navigate("/create-food"); // Redirect to create food page after successful registration

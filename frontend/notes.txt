@@ -1,0 +1,18 @@
+/user/register:user register form
+/user/login:user login form
+/user/logout:user logout
+/food-partner/register:food partner register form
+/food-partner/login:food partner login form
+/food-partner/logout:food partner logout
+/food/  
+/food/like
+/food/save
+/food/save
+
+
+//cors origin:aap ek website pr rehte hue dursir website pr request nhi kar sakte
+//backend me cors ko allow krna padta hai
+//frontend me axios me withCredentials: true set krna padta hai
+
+
+//

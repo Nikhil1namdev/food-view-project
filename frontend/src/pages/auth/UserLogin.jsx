@@ -16,7 +16,10 @@ const UserLogin = () => {
     const response = await axios.post("http://localhost:3000/api/auth/user/login", {
       email,
       password
-    }, { withCredentials: true });
+      
+    }, 
+    //ye line likhne se cookies ke andar token store hota hai jabb axios use karte hai
+    { withCredentials: true });
 
     console.log(response.data);
 

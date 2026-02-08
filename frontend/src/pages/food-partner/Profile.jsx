@@ -13,7 +13,12 @@ const Profile = () => {
             .then(response => {
                 setProfile(response.data.foodPartner)
                 setVideos(response.data.foodPartner.foodItems)
+                console.log("Food Partner",response.data.foodPartner);
+                
             })
+            .catch(error => {
+                console.error("Error fetching food partner:", error);
+            })  
     }, [ id ])
 
 

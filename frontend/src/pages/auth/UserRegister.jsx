@@ -22,12 +22,12 @@ const UserRegister = () => {
             email,
             password
         },
-        {
+        { //ye line likhne se cookies ke andar token store hota hai jabb axios use karte hai
             withCredentials: true
         })
 
         console.log(response.data);
-
+  ///jese hi user register ho usko home page pr redirect kara
         navigate("/")
 
     };
