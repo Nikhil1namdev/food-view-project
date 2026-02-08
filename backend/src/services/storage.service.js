@@ -18,3 +18,5 @@ async function uploadFile(file, fileName) {
 module.exports = {
     uploadFile
 }
+
+//yaha pr file ki jagah buffer jayega jisme file ka data hota hai 

@@ -1,3 +1,5 @@
+//agar routes file me api crete karne ho to router create kare karne padte hai
+
 const express = require('express');
 const authController = require("../controllers/auth.controller")
 

@@ -2,15 +2,16 @@ const userModel = require("../models/user.model")
 const foodPartnerModel = require("../models/foodpartner.model")
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-
+//ye contorlller hai
 async function registerUser(req, res) {
-
+// Frontend se jo JSON aaya usme se:
     const { fullName, email, password } = req.body;
-
+   //MongoDB me check karta hai same email ka user pehle se hai ya nahi
     const isUserAlreadyExists = await userModel.findOne({
         email
     })
 
+    //agar use mil gaaya signup stop
     if (isUserAlreadyExists) {
         return res.status(400).json({
             message: "User already exists"
@@ -19,7 +20,9 @@ async function registerUser(req, res) {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const user = await userModel.create({
+
+  //MongoDB me new user document save ho raha hai
+     const user = await userModel.create({
         fullName,
         email,
         password: hashedPassword
@@ -29,6 +32,8 @@ async function registerUser(req, res) {
         id: user._id,
     }, process.env.JWT_SECRET)
 
+
+ //Token cookie me set karna
     res.cookie("token", token)
 
     res.status(201).json({
@@ -42,10 +47,12 @@ async function registerUser(req, res) {
 
 }
 
+//login controller
+
 async function loginUser(req, res) {
 
     const { email, password } = req.body;
-
+  //iss email se koi account exit karna hai ya nhi check krre hai
     const user = await userModel.findOne({
         email
     })
@@ -55,7 +62,7 @@ async function loginUser(req, res) {
             message: "Invalid email or password"
         })
     }
-
+//db me jo passowred hai usee match krre hai
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
@@ -64,6 +71,8 @@ async function loginUser(req, res) {
         })
     }
 
+
+    
     const token = jwt.sign({
         id: user._id,
     }, process.env.JWT_SECRET)
@@ -87,7 +96,8 @@ function logoutUser(req, res) {
     });
 }
 
-
+//food partner controller
+//register food partner controller
 async function registerFoodPartner(req, res) {
 
     const { name, email, password, phone, address, contactName } = req.body;
@@ -131,8 +141,9 @@ async function registerFoodPartner(req, res) {
         }
     })
 
-}
+}   
 
+//login food partner controller
 async function loginFoodPartner(req, res) {
 
     const { email, password } = req.body;
@@ -170,7 +181,8 @@ async function loginFoodPartner(req, res) {
         }
     })
 }
-
+   
+//logout food partner controller
 function logoutFoodPartner(req, res) {
     res.clearCookie("token");
     res.status(200).json({
@@ -178,6 +190,9 @@ function logoutFoodPartner(req, res) {
     });
 }
 
+
+
+//ek file se ye sab export karne ke liye nhi to hum ek hi controller export kar pate
 module.exports = {
     registerUser,
     loginUser,

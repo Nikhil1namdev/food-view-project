@@ -1,67 +1,75 @@
-const foodPartnerModel = require("../models/foodpartner.model")
-const userModel = require("../models/user.model")
+const foodPartnerModel = require("../models/foodpartner.model");
+const userModel = require("../models/user.model");
 const jwt = require("jsonwebtoken");
 
-
 async function authFoodPartnerMiddleware(req, res, next) {
+  console.log("=== AUTH FOOD PARTNER MIDDLEWARE ===");
+  console.log("Cookies received:", req.cookies);
+  const token = req.cookies.token;
 
-    const token = req.cookies.token;
+  //check karo token hai ya nhi
+  if (!token) {
+    console.log("❌ No token found in cookies");
+    return res.status(401).json({
+      message: "Please login first",
+    });
+  }
+  console.log("✅ Token found:", token.substring(0, 20) + "...");
+  //agar token hai to verify karo token ko
+  try {
+    //iss decoded ke ander data aayega agar token sahi hoga to or token ke ander humne foodparten ki id rakhi thi
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    if (!token) {
-        return res.status(401).json({
-            message: "Please login first"
-        })
-    }
+    const foodPartner = await foodPartnerModel.findById(decoded.id);
 
-    try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET)
+    req.foodPartner = foodPartner;
+    //next() function ke through middleware ke bad ke function ko call krte hai
+    next();
+  } catch (err) {
+    //agar token invalid hai to
 
-        const foodPartner = await foodPartnerModel.findById(decoded.id);
-
-        req.foodPartner = foodPartner
-
-        next()
-
-    } catch (err) {
-
-        return res.status(401).json({
-            message: "Invalid token"
-        })
-
-    }
-
+    return res.status(401).json({
+      message: "Invalid token",
+    });
+  }
 }
 
+//
 async function authUserMiddleware(req, res, next) {
+  const token = req.cookies.token;
 
-    const token = req.cookies.token;
+  if (!token) {
+    return res.status(401).json({
+      message: "Please login first",
+    });
+  }
 
-    if (!token) {
-        return res.status(401).json({
-            message: "Please login first"
-        })
-    }
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET)
 
-        const user = await userModel.findById(decoded.id);
+    const user = await userModel.findById(decoded.id);
+    console.log("decoded token:", decoded);
+console.log("user from DB:", user);
 
-        req.user = user
 
-        next()
+     if (!user) {
+  return res.status(401).json({
+    message: "User not registered",
+  });
+}
+ 
+    req.user = user;
 
-    } catch (err) {
-
-        return res.status(401).json({
-            message: "Invalid token"
-        })
-
-    }
-
+    next();
+  } catch (err) {
+    return res.status(401).json({
+      message: "Invalid token",
+    });
+  }
 }
 
 module.exports = {
-    authFoodPartnerMiddleware,
-    authUserMiddleware
-}
+  authFoodPartnerMiddleware,
+  authUserMiddleware,
+};

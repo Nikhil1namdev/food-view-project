@@ -1,0 +1,43 @@
+user:food reels,view food itmes,    
+food partner: list food itmes,add food items,update food items,delete food items
+app.js me server create kiya
+server.js me server start kiya
+db.js :logic to create serer to database 
+final call is we do in server.js
+
+contorller:api ke sath jo likhte hai req,res vo contorlller hai
+logic controller  file me hoti hai 
+
+app.use(express.json()) lets your Express app understand JSON data coming from the client and makes it available in req.body.
+
+
+token ke liye jwt use hota hai or uss token
+ko save karne ke liye cookie use hota hai
+
+
+website:
+jwtsecreategenerator
+
+
+
+
+1:8:04 pr api save karna postman me collection se 
+jab bhi food partner register ya login krta to hum usse token dete hai usse toekn ko cookie me save krte hai or token ko use krke food partner ko access krne ke liye hai   
+cookies ke sath har request me vo data server ke paas aata hai jo hum usme save krte hai cookie me
+middleware has three parameter:req, res, next
+middleware ke andar hum token ko verify krte hai or token ko verify krne ke liye hum jwt.use krte hai   
+next() function ke through middleware ke bad ke function ko call krte hai   
+
+1:38:02 postman me collection banao food-item
+jab hum fronted se file bejte hai liek video,pdf to express  ke server pr to express ka server usko directly nhi
+samaj sakta uske liye we are using multer
+
+files hum cloudstorage provider me store karre hai (imagekit)
+
+
+2:10:45 postman check karo
+2:27:06 api save karo
+video ,pdf agar bejhna ho to postman me body me form-data use karte hai naki raw
+
+
+ upload.single("video"), yaha pr jo naam hai vhi fornted se bhi dena padega like postman me 
