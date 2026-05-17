@@ -121,20 +121,20 @@ const EmptyFeed = () => {
 
         {/* CTA Actions */}
         <div className="animate-fade-up flex flex-col sm:flex-row items-center justify-center gap-4 w-full pt-4">
-          <Link 
-            to="/register" 
+          <button 
+            onClick={() => window.location.reload()}
             className="flex items-center justify-center space-x-2 bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-black text-sm px-8 py-3.5 rounded-2xl w-full sm:w-auto shadow-xl shadow-orange-500/10 active:scale-95 transition-all duration-300"
           >
             <Play className="w-4 h-4 fill-current" />
-            <span>Start Swiping</span>
-          </Link>
+            <span>Refresh Feed</span>
+          </button>
 
           <Link 
             to="/food-partner/register" 
             className="flex items-center justify-center space-x-2 bg-zinc-900/60 hover:bg-zinc-800/80 border border-zinc-800 text-white font-extrabold text-sm px-8 py-3.5 rounded-2xl w-full sm:w-auto active:scale-95 transition-all duration-300 group"
           >
             <Store className="w-4 h-4 text-orange-500 group-hover:scale-110 transition-transform duration-300" />
-            <span>Join as Merchant</span>
+            <span>Upload as Merchant</span>
           </Link>
         </div>
 

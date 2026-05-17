@@ -1,6 +1,7 @@
 // create server
 const express = require("express");
 const cookieParser = require("cookie-parser");
+const passport = require("./services/passport");
 const authRoutes = require("./routes/auth.routes");
 const foodRoutes = require("./routes/food.routes");
 const foodPartnerRoutes = require("./routes/food-partner.routes");
@@ -14,6 +15,7 @@ app.use(
   }),
 );
 app.use(cookieParser());
+app.use(passport.initialize());
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

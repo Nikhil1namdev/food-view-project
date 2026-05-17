@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import axios from 'axios'
+import toast from 'react-hot-toast'
 import Navbar from '../../components/home/Navbar'
 import EmptyFeed from '../../components/home/EmptyFeed'
 import ReelFeed from '../../components/home/ReelFeed'
@@ -15,11 +16,18 @@ import { Loader2 } from 'lucide-react'
 // - EmptyFeed: Premium promotional landing state if feed array is empty
 // - ReelFeed: Cinematic full-screen video player if food reels exist
 // - BottomNav: Mobile glassmorphic sticky footer navigators
+//
+// OPTIMISTIC UI PATTERN:
+// When a user likes/saves a reel, we immediately update the local state
+// (count + visual toggle) BEFORE the API call completes. If the API
+// fails, we roll back the state. This makes the app feel instant and
+// responsive, even on slow networks.
 const Home = () => {
   const [videos, setVideos] = useState([])
   const [loading, setLoading] = useState(true)
 
   // Retrieves active recipe/food videos on mount
+  // Backend now returns `isLiked` and `isSaved` flags per item
   useEffect(() => {
     const fetchVideos = async () => {
       try {
@@ -37,45 +45,77 @@ const Home = () => {
     fetchVideos()
   }, [])
 
-  // Optimistic Heart like update handler
+  // ─── OPTIMISTIC LIKE HANDLER ───
+  // 1. Immediately toggle UI state (filled heart + count change)
+  // 2. Fire API request in background
+  // 3. If API fails → rollback UI state and show error toast
   const likeVideo = async (item) => {
+    const wasLiked = item.isLiked
+    const prevCount = item.likeCount || 0
+
+    // Step 1: Optimistic UI update (instant feedback)
+    setVideos(prev => prev.map(v => 
+      v._id === item._id 
+        ? { ...v, isLiked: !wasLiked, likeCount: wasLiked ? Math.max(0, prevCount - 1) : prevCount + 1 }
+        : v
+    ))
+
     try {
-      const response = await axios.post("http://localhost:3000/api/food/like", { 
+      // Step 2: Background API call
+      await axios.post("http://localhost:3000/api/food/like", { 
         foodId: item._id 
       }, { withCredentials: true })
 
-      if (response.data.like) {
-        setVideos((prev) => 
-          prev.map((v) => v._id === item._id ? { ...v, likeCount: (v.likeCount || 0) + 1 } : v)
-        )
-      } else {
-        setVideos((prev) => 
-          prev.map((v) => v._id === item._id ? { ...v, likeCount: Math.max(0, (v.likeCount || 1) - 1) } : v)
-        )
+      // Toast feedback
+      if (!wasLiked) {
+        toast('❤️ Liked!', { duration: 1500, style: { background: '#18181b', color: '#f87171', border: '1px solid #7f1d1d', fontSize: '11px', fontWeight: 700 }})
       }
     } catch (err) {
+      // Step 3: Rollback on failure
       console.error("Error setting video like toggle:", err)
+      setVideos(prev => prev.map(v => 
+        v._id === item._id 
+          ? { ...v, isLiked: wasLiked, likeCount: prevCount }
+          : v
+      ))
+      toast.error("Failed to update like. Try again!")
     }
   }
 
-  // Optimistic Bookmark save update handler
+  // ─── OPTIMISTIC SAVE HANDLER ───
+  // Same pattern as like: instant UI → background API → rollback on error
   const saveVideo = async (item) => {
+    const wasSaved = item.isSaved
+    const prevCount = item.savesCount || 0
+
+    // Step 1: Optimistic UI update
+    setVideos(prev => prev.map(v => 
+      v._id === item._id 
+        ? { ...v, isSaved: !wasSaved, savesCount: wasSaved ? Math.max(0, prevCount - 1) : prevCount + 1 }
+        : v
+    ))
+
     try {
-      const response = await axios.post("http://localhost:3000/api/food/save", { 
+      // Step 2: Background API call
+      await axios.post("http://localhost:3000/api/food/save", { 
         foodId: item._id 
       }, { withCredentials: true })
 
-      if (response.data.save) {
-        setVideos((prev) => 
-          prev.map((v) => v._id === item._id ? { ...v, savesCount: (v.savesCount || 0) + 1 } : v)
-        )
+      // Toast feedback
+      if (!wasSaved) {
+        toast('🔖 Saved to bookmarks!', { duration: 1500, style: { background: '#18181b', color: '#fb923c', border: '1px solid #7c2d12', fontSize: '11px', fontWeight: 700 }})
       } else {
-        setVideos((prev) => 
-          prev.map((v) => v._id === item._id ? { ...v, savesCount: Math.max(0, (v.savesCount || 1) - 1) } : v)
-        )
+        toast('Removed from bookmarks', { duration: 1500, style: { background: '#18181b', color: '#a1a1aa', border: '1px solid #27272a', fontSize: '11px', fontWeight: 700 }})
       }
     } catch (err) {
+      // Step 3: Rollback on failure
       console.error("Error toggling bookmark status:", err)
+      setVideos(prev => prev.map(v => 
+        v._id === item._id 
+          ? { ...v, isSaved: wasSaved, savesCount: prevCount }
+          : v
+      ))
+      toast.error("Failed to update bookmark. Try again!")
     }
   }
 

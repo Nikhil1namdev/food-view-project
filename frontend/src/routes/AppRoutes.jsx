@@ -11,38 +11,81 @@ import Layout from '../components/Layout';
 import CreateFood from '../pages/food-partner/CreateFood';
 import Profile from '../pages/food-partner/Profile';
 import ProtectedRoute from '../components/ProtectedRoute';
+import GuestRoute from '../components/GuestRoute';
 
 // =========================================================================
 // ROUTING ARCHITECTURE (AppRoutes)
 // =========================================================================
-// Maps application URLs to specialized views.
-// Non-auth routes (Auth gates) are placed globally, while inside-app views
-// are grouped under a shared Layout component.
+// Maps application URLs to specialized views with three security layers:
+//
+// 1. GUEST ROUTES (GuestRoute wrapper):
+//    Login/Register pages wrapped in GuestRoute. If a user is already
+//    logged in and tries to visit /user/login, they get auto-redirected
+//    to their home page. Prevents double-session confusion.
+//
+// 2. PROTECTED ROUTES (ProtectedRoute wrapper):
+//    Consumer and Partner pages are wrapped with role-specific guards.
+//    Unauthenticated users → redirect to /register
+//    Wrong role users → redirect to their own home page
+//
+// 3. PUBLIC ROUTES (no wrapper):
+//    Partner profile pages are publicly accessible by anyone (consumers
+//    can view a partner's store, partners can view their own dashboard).
+//
+// Route Map:
+// ┌──────────────────────────┬──────────────────────┬──────────────┐
+// │ Route                    │ Access               │ Guard        │
+// ├──────────────────────────┼──────────────────────┼──────────────┤
+// │ /register                │ Guests only          │ GuestRoute   │
+// │ /user/register           │ Guests only          │ GuestRoute   │
+// │ /user/login              │ Guests only          │ GuestRoute   │
+// │ /food-partner/register   │ Guests only          │ GuestRoute   │
+// │ /food-partner/login      │ Guests only          │ GuestRoute   │
+// │ /                        │ Consumers only       │ Protected    │
+// │ /saved                   │ Consumers only       │ Protected    │
+// │ /create-food             │ Partners only        │ Protected    │
+// │ /food-partner/:id        │ Everyone (public)    │ None         │
+// └──────────────────────────┴──────────────────────┴──────────────┘
 const AppRoutes = () => {
     return (
         <Router>
             <Routes>
-                {/* Authentication Portals (Full-screen layouts) */}
-                <Route path="/register" element={<ChooseRegister />} />
-                <Route path="/user/register" element={<UserRegister />} />
-                <Route path="/user/login" element={<UserLogin />} />
-                <Route path="/food-partner/register" element={<FoodPartnerRegister />} />
-                <Route path="/food-partner/login" element={<FoodPartnerLogin />} />
+                {/* ── GUEST-ONLY AUTH PORTALS ── */}
+                {/* Wrapped in GuestRoute: logged-in users auto-redirect to home */}
+                <Route path="/register" element={
+                    <GuestRoute><ChooseRegister /></GuestRoute>
+                } />
+                <Route path="/user/register" element={
+                    <GuestRoute><UserRegister /></GuestRoute>
+                } />
+                <Route path="/user/login" element={
+                    <GuestRoute><UserLogin /></GuestRoute>
+                } />
+                <Route path="/food-partner/register" element={
+                    <GuestRoute><FoodPartnerRegister /></GuestRoute>
+                } />
+                <Route path="/food-partner/login" element={
+                    <GuestRoute><FoodPartnerLogin /></GuestRoute>
+                } />
 
-                {/* Core Application shell with Persistent Left Sidebar/Bottom Nav */}
+                {/* ── PROTECTED APP SHELL ── */}
+                {/* All routes below share the persistent Layout (sidebar + nav) */}
                 <Route element={<Layout />}>
-                    {/* Consumer-only feeds */}
+                    
+                    {/* Consumer-only feeds (role: 'user') */}
                     <Route element={<ProtectedRoute allowedRoles={['user']} />}>
                         <Route path="/" element={<Home />} />
                         <Route path="/saved" element={<Saved />} />
                     </Route>
 
-                    {/* Merchant-only actions */}
+                    {/* Merchant-only actions (role: 'partner') */}
                     <Route element={<ProtectedRoute allowedRoles={['partner']} />}>
                         <Route path="/create-food" element={<CreateFood />} />
                     </Route>
 
-                    {/* Shared public views */}
+                    {/* Public partner profile (accessible by everyone) */}
+                    {/* No ProtectedRoute wrapper: consumers can view stores, */}
+                    {/* partners see their own dashboard with owner controls */}
                     <Route path="/food-partner/:id" element={<Profile />} />
                 </Route>
             </Routes>

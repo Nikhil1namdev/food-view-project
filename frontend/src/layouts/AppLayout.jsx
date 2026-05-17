@@ -1,5 +1,5 @@
 import React from 'react'
-import { Link, NavLink, Outlet } from 'react-router-dom'
+import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { Home, Bookmark, PlusSquare, LogOut, Store } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { cn } from '../lib/utils'
@@ -14,6 +14,22 @@ import { cn } from '../lib/utils'
 // - Clean responsive outlet grids
 const AppLayout = () => {
   const { role, user, logout, isAuthenticated } = useAuth()
+  const location = useLocation()
+  
+  // Tab reading for active state
+  const searchParams = new URLSearchParams(location.search)
+  const activeTab = searchParams.get('tab') || 'dashboard'
+  
+  // Check if we are actually on the dashboard profile page
+  const isOnDashboardPath = location.pathname.startsWith('/food-partner/') && !location.pathname.includes('/login') && !location.pathname.includes('/register')
+  
+  const getTabClass = (tabName) => {
+    const isActive = isOnDashboardPath && activeTab === tabName;
+    return cn(
+      "flex items-center space-x-3 px-4 py-3 rounded-xl text-xs font-black tracking-tight transition-all duration-300 group hover:bg-white/5",
+      isActive ? "bg-gradient-to-r from-orange-500 to-red-600 text-white shadow-lg shadow-orange-500/10" : "text-neutral-400 hover:text-white"
+    )
+  }
 
   return (
     <div className="hidden md:flex h-screen w-screen bg-neutral-950 text-white overflow-hidden font-sans">
@@ -59,16 +75,42 @@ const AppLayout = () => {
             )}
 
             {role === 'partner' && (
-              <NavLink 
-                to="/create-food" 
-                className={({ isActive }) => cn(
-                  "flex items-center space-x-3 px-4 py-3 rounded-xl text-xs font-black tracking-tight transition-all duration-300 group hover:bg-white/5",
-                  isActive ? "bg-gradient-to-r from-orange-500 to-red-600 text-white shadow-lg shadow-orange-500/10" : "text-neutral-400 hover:text-white"
-                )}
-              >
-                <PlusSquare className="w-4.5 h-4.5 transition-transform duration-300 group-hover:scale-110" />
-                <span>Upload Food</span>
-              </NavLink>
+              <>
+                <Link 
+                  to={`/food-partner/${user?._id || user?.id}`} 
+                  className={getTabClass('dashboard')}
+                >
+                  <Home className="w-4.5 h-4.5 transition-transform duration-300 group-hover:scale-110" />
+                  <span>Dashboard</span>
+                </Link>
+
+                <NavLink 
+                  to="/create-food" 
+                  className={({ isActive }) => cn(
+                    "flex items-center space-x-3 px-4 py-3 rounded-xl text-xs font-black tracking-tight transition-all duration-300 group hover:bg-white/5",
+                    isActive ? "bg-gradient-to-r from-orange-500 to-red-600 text-white shadow-lg shadow-orange-500/10" : "text-neutral-400 hover:text-white"
+                  )}
+                >
+                  <PlusSquare className="w-4.5 h-4.5 transition-transform duration-300 group-hover:scale-110" />
+                  <span>Upload Food</span>
+                </NavLink>
+
+                <Link 
+                  to={`/food-partner/${user?._id || user?.id}?tab=uploads`} 
+                  className={getTabClass('uploads')}
+                >
+                  <Store className="w-4.5 h-4.5 transition-transform duration-300 group-hover:scale-110" />
+                  <span>My Uploads</span>
+                </Link>
+
+                <Link 
+                  to={`/food-partner/${user?._id || user?.id}?tab=analytics`} 
+                  className={getTabClass('analytics')}
+                >
+                  <Bookmark className="w-4.5 h-4.5 transition-transform duration-300 group-hover:scale-110" />
+                  <span>Analytics</span>
+                </Link>
+              </>
             )}
           </nav>
         </div>
@@ -77,8 +119,12 @@ const AppLayout = () => {
         <div className="space-y-4">
           {isAuthenticated && (
             <div className="flex items-center space-x-3 bg-white/5 p-3 rounded-xl border border-white/5">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-orange-500 to-red-500 flex items-center justify-center font-black text-xs text-white uppercase">
-                {user?.fullName?.charAt(0) || user?.name?.charAt(0) || "U"}
+              <div className="w-9 h-9 shrink-0 rounded-full bg-gradient-to-tr from-orange-500 to-red-500 flex items-center justify-center font-black text-xs text-white uppercase overflow-hidden border border-white/10">
+                {user?.avatar ? (
+                  <img src={user.avatar} alt="Profile" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                ) : (
+                  user?.fullName?.charAt(0) || user?.name?.charAt(0) || "U"
+                )}
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-black text-white truncate">

@@ -2,196 +2,298 @@ const userModel = require("../models/user.model")
 const foodPartnerModel = require("../models/foodpartner.model")
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-//ye contorlller hai
+
+// =========================================================================
+// REGISTER NEW PLATFORM USER (CONSUMER ROLE)
+// =========================================================================
 async function registerUser(req, res) {
-// Frontend se jo JSON aaya usme se:
-    const { fullName, email, password } = req.body;
-   //MongoDB me check karta hai same email ka user pehle se hai ya nahi
-    const isUserAlreadyExists = await userModel.findOne({
-        email
-    })
+    try {
+        const { fullName, email, password } = req.body;
 
-    //agar use mil gaaya signup stop
-    if (isUserAlreadyExists) {
-        return res.status(400).json({
-            message: "User already exists"
-        })
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-
-  //MongoDB me new user document save ho raha hai
-     const user = await userModel.create({
-        fullName,
-        email,
-        password: hashedPassword
-    })
-
-    const token = jwt.sign({
-        id: user._id,
-    }, process.env.JWT_SECRET)
-
-
- //Token cookie me set karna
-    res.cookie("token", token)
-
-    res.status(201).json({
-        message: "User registered successfully",
-        user: {
-            _id: user._id,
-            email: user.email,
-            fullName: user.fullName
+        if (!fullName || !email || !password) {
+            return res.status(400).json({
+                success: false,
+                message: "Please provide all required registration fields."
+            });
         }
-    })
 
+        // MongoDB check: check if user already exists
+        const isUserAlreadyExists = await userModel.findOne({ email });
+        if (isUserAlreadyExists) {
+            return res.status(400).json({
+                success: false,
+                message: "User with this email already exists."
+            });
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        // MongoDB save: create user document
+        const user = await userModel.create({
+            fullName,
+            email,
+            password: hashedPassword
+        });
+
+        // JWT Token creation
+        const token = jwt.sign({
+            id: user._id,
+        }, process.env.JWT_SECRET, { expiresIn: '7d' });
+
+        // Set secure HttpOnly JWT cookie
+        res.cookie("token", token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax",
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+        });
+
+        return res.status(201).json({
+            success: true,
+            message: "User registered successfully",
+            user: {
+                _id: user._id,
+                email: user.email,
+                fullName: user.fullName
+            }
+        });
+    } catch (err) {
+        console.error("Error in consumer registration controller:", err);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error occurred during consumer onboarding."
+        });
+    }
 }
 
-//login controller
-
+// =========================================================================
+// LOGIN PLATFORM USER (CONSUMER ROLE)
+// =========================================================================
 async function loginUser(req, res) {
+    try {
+        const { email, password } = req.body;
 
-    const { email, password } = req.body;
-  //iss email se koi account exit karna hai ya nhi check krre hai
-    const user = await userModel.findOne({
-        email
-    })
-
-    if (!user) {
-        return res.status(400).json({
-            message: "Invalid email or password"
-        })
-    }
-//db me jo passowred hai usee match krre hai
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-
-    if (!isPasswordValid) {
-        return res.status(400).json({
-            message: "Invalid email or password"
-        })
-    }
-
-
-    
-    const token = jwt.sign({
-        id: user._id,
-    }, process.env.JWT_SECRET)
-
-    res.cookie("token", token)
-
-    res.status(200).json({
-        message: "User logged in successfully",
-        user: {
-            _id: user._id,
-            email: user.email,
-            fullName: user.fullName
+        if (!email || !password) {
+            return res.status(400).json({
+                success: false,
+                message: "Please provide both email and password."
+            });
         }
-    })
+
+        // MongoDB check: verify user exists
+        const user = await userModel.findOne({ email });
+        if (!user) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid email or password credentials."
+            });
+        }
+
+        // bcrypt check: verify password matches
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+        if (!isPasswordValid) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid email or password credentials."
+            });
+        }
+
+        const token = jwt.sign({
+            id: user._id,
+        }, process.env.JWT_SECRET, { expiresIn: '7d' });
+
+        // Set secure HttpOnly JWT cookie
+        res.cookie("token", token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax",
+            maxAge: 7 * 24 * 60 * 60 * 1000
+        });
+
+        return res.status(200).json({
+            success: true,
+            message: "User logged in successfully",
+            user: {
+                _id: user._id,
+                email: user.email,
+                fullName: user.fullName
+            }
+        });
+    } catch (err) {
+        console.error("Error in consumer login controller:", err);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error occurred during authentication."
+        });
+    }
 }
 
+// =========================================================================
+// LOGOUT PLATFORM USER (CONSUMER ROLE)
+// =========================================================================
+// Securely clears the JWT HttpOnly cookie from the browser.
+// The clearCookie options MUST match the options used when setting the cookie
+// (httpOnly, sameSite) otherwise some browsers will refuse to delete it.
 function logoutUser(req, res) {
-    res.clearCookie("token");
-    res.status(200).json({
+    res.clearCookie("token", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax"
+    });
+    return res.status(200).json({
+        success: true,
         message: "User logged out successfully"
     });
 }
 
-//food partner controller
-//register food partner controller
+// =========================================================================
+// REGISTER NEW FOOD PARTNER (MERCHANT ROLE)
+// =========================================================================
 async function registerFoodPartner(req, res) {
+    try {
+        const { name, email, password, phone, address, contactName } = req.body;
 
-    const { name, email, password, phone, address, contactName } = req.body;
-
-    const isAccountAlreadyExists = await foodPartnerModel.findOne({
-        email
-    })
-
-    if (isAccountAlreadyExists) {
-        return res.status(400).json({
-            message: "Food partner account already exists"
-        })
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const foodPartner = await foodPartnerModel.create({
-        name,
-        email,
-        password: hashedPassword,
-        phone,
-        address,
-        contactName
-    })
-
-    const token = jwt.sign({
-        id: foodPartner._id,
-    }, process.env.JWT_SECRET)
-
-    res.cookie("token", token)
-
-    res.status(201).json({
-        message: "Food partner registered successfully",
-        foodPartner: {
-            _id: foodPartner._id,
-            email: foodPartner.email,
-            name: foodPartner.name,
-            address: foodPartner.address,
-            contactName: foodPartner.contactName,
-            phone: foodPartner.phone
+        if (!name || !email || !password || !phone || !address || !contactName) {
+            return res.status(400).json({
+                success: false,
+                message: "Please provide all required merchant onboarding fields."
+            });
         }
-    })
 
+        // MongoDB check: check if food partner already exists
+        const isAccountAlreadyExists = await foodPartnerModel.findOne({ email });
+        if (isAccountAlreadyExists) {
+            return res.status(400).json({
+                success: false,
+                message: "A merchant account with this email already exists."
+            });
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        // MongoDB save: create merchant document
+        const foodPartner = await foodPartnerModel.create({
+            name,
+            email,
+            password: hashedPassword,
+            phone,
+            address,
+            contactName
+        });
+
+        const token = jwt.sign({
+            id: foodPartner._id,
+        }, process.env.JWT_SECRET, { expiresIn: '7d' });
+
+        // Set secure HttpOnly JWT cookie
+        res.cookie("token", token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax",
+            maxAge: 7 * 24 * 60 * 60 * 1000
+        });
+
+        return res.status(201).json({
+            success: true,
+            message: "Food partner registered successfully",
+            foodPartner: {
+                _id: foodPartner._id,
+                email: foodPartner.email,
+                name: foodPartner.name,
+                address: foodPartner.address,
+                contactName: foodPartner.contactName,
+                phone: foodPartner.phone
+            }
+        });
+    } catch (err) {
+        console.error("Error in merchant registration controller:", err);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error occurred during merchant onboarding."
+        });
+    }
 }   
 
-//login food partner controller
+// =========================================================================
+// LOGIN FOOD PARTNER (MERCHANT ROLE)
+// =========================================================================
 async function loginFoodPartner(req, res) {
+    try {
+        const { email, password } = req.body;
 
-    const { email, password } = req.body;
-
-    const foodPartner = await foodPartnerModel.findOne({
-        email
-    })
-
-    if (!foodPartner) {
-        return res.status(400).json({
-            message: "Invalid email or password"
-        })
-    }
-
-    const isPasswordValid = await bcrypt.compare(password, foodPartner.password);
-
-    if (!isPasswordValid) {
-        return res.status(400).json({
-            message: "Invalid email or password"
-        })
-    }
-
-    const token = jwt.sign({
-        id: foodPartner._id,
-    }, process.env.JWT_SECRET)
-
-    res.cookie("token", token)
-
-    res.status(200).json({
-        message: "Food partner logged in successfully",
-        foodPartner: {
-            _id: foodPartner._id,
-            email: foodPartner.email,
-            name: foodPartner.name
+        if (!email || !password) {
+            return res.status(400).json({
+                success: false,
+                message: "Please provide both email and password."
+            });
         }
-    })
+
+        // MongoDB check: verify merchant account exists
+        const foodPartner = await foodPartnerModel.findOne({ email });
+        if (!foodPartner) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid email or password credentials."
+            });
+        }
+
+        // bcrypt check: verify password matches
+        const isPasswordValid = await bcrypt.compare(password, foodPartner.password);
+        if (!isPasswordValid) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid email or password credentials."
+            });
+        }
+
+        const token = jwt.sign({
+            id: foodPartner._id,
+        }, process.env.JWT_SECRET, { expiresIn: '7d' });
+
+        // Set secure HttpOnly JWT cookie
+        res.cookie("token", token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax",
+            maxAge: 7 * 24 * 60 * 60 * 1000
+        });
+
+        return res.status(200).json({
+            success: true,
+            message: "Food partner logged in successfully",
+            foodPartner: {
+                _id: foodPartner._id,
+                email: foodPartner.email,
+                name: foodPartner.name
+            }
+        });
+    } catch (err) {
+        console.error("Error in merchant login controller:", err);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error occurred during merchant authentication."
+        });
+    }
 }
    
-//logout food partner controller
+// =========================================================================
+// LOGOUT FOOD PARTNER (MERCHANT ROLE)
+// =========================================================================
+// Same secure cookie clearing for merchant sessions.
 function logoutFoodPartner(req, res) {
-    res.clearCookie("token");
-    res.status(200).json({
+    res.clearCookie("token", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax"
+    });
+    return res.status(200).json({
+        success: true,
         message: "Food partner logged out successfully"
     });
 }
 
 // =========================================================================
-// ACTIVE SESSION CHECK CONTROLLER
+// UNIFIED ACTIVE SESSION VERIFICATION
 // =========================================================================
 // Verifies presence and validity of JWT token from secure HttpOnly cookies.
 // Checks if token owner belongs to the Normal User or Food Partner database.
@@ -201,6 +303,7 @@ async function checkAuth(req, res) {
     
     if (!token) {
         return res.status(200).json({ 
+            success: false,
             authenticated: false, 
             message: "No active session detected" 
         });
@@ -213,12 +316,15 @@ async function checkAuth(req, res) {
         let user = await userModel.findById(decoded.id).select("-password");
         if (user) {
             return res.status(200).json({
+                success: true,
                 authenticated: true,
                 role: "user",
                 user: {
                     _id: user._id,
                     email: user.email,
-                    fullName: user.fullName
+                    fullName: user.fullName,
+                    authProvider: user.authProvider,
+                    avatar: user.avatar
                 }
             });
         }
@@ -227,6 +333,7 @@ async function checkAuth(req, res) {
         let foodPartner = await foodPartnerModel.findById(decoded.id).select("-password");
         if (foodPartner) {
             return res.status(200).json({
+                success: true,
                 authenticated: true,
                 role: "partner",
                 user: {
@@ -238,19 +345,53 @@ async function checkAuth(req, res) {
         }
 
         return res.status(200).json({ 
+            success: false,
             authenticated: false, 
             message: "Session token matched no active profile document" 
         });
 
     } catch (err) {
         return res.status(200).json({ 
+            success: false,
             authenticated: false, 
             message: "Session expired or invalid validation key" 
         });
     }
 }
 
-//ek file se ye sab export karne ke liye nhi to hum ek hi controller export kar pate
+// =========================================================================
+// SOCIAL SSO OAUTH SUCCESS CALLBACK ROUTE
+// =========================================================================
+// Triggers on verified OAuth callbacks.
+// Signs stateless JWT and returns cookie before redirecting browser to frontend home.
+async function oauthSuccess(req, res) {
+    try {
+        const user = req.user;
+        
+        if (!user) {
+            return res.redirect("http://localhost:5173/user/login?error=oauth_profile_missing");
+        }
+
+        const token = jwt.sign({
+            id: user._id,
+        }, process.env.JWT_SECRET, { expiresIn: '7d' });
+
+        // Set secure HttpOnly JWT cookie
+        res.cookie("token", token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax",
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+        });
+
+        // Redirect back to frontend home page
+        return res.redirect("http://localhost:5173/");
+    } catch (err) {
+        console.error("SSO Callback redirect error:", err);
+        return res.redirect("http://localhost:5173/user/login?error=internal_server_error");
+    }
+}
+
 module.exports = {
     registerUser,
     loginUser,
@@ -258,5 +399,6 @@ module.exports = {
     registerFoodPartner,
     loginFoodPartner,
     logoutFoodPartner,
-    checkAuth
+    checkAuth,
+    oauthSuccess
 }

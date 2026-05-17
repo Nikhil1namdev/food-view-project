@@ -2,20 +2,20 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
 import { Mail, Lock, LogIn, AlertCircle } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import toast from 'react-hot-toast';
 import AuthLayout from '../../components/auth/AuthLayout';
 import AuthCard from '../../components/auth/AuthCard';
 import AuthInput from '../../components/auth/AuthInput';
 import AuthButton from '../../components/auth/AuthButton';
 import { useAuth } from '../../context/AuthContext';
+import { FoodPartnerLoginSchema } from '../../schemas/auth.schema';
 
 // =========================================================================
 // FOOD PARTNER / MERCHANT LOGIN PORTAL (FoodPartnerLogin)
 // =========================================================================
-// Renders dynamic forms for kitchen owners and street food partners.
-// Includes:
-// - Direct sync with AuthContext hooks
-// - Submit action spin loading
-// - Custom alert boxes
+// Renders dynamic forms for kitchen owners using React Hook Form + Zod.
 const FoodPartnerLogin = () => {
   const navigate = useNavigate();
   const { checkUserAuth } = useAuth();
@@ -23,39 +23,41 @@ const FoodPartnerLogin = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const { register, handleSubmit, formState: { errors } } = useForm({
+    resolver: zodResolver(FoodPartnerLoginSchema),
+    mode: "onTouched"
+  });
+
+  const onSubmit = async (formData) => {
     setError("");
-
-    const email = e.target.email.value.trim();
-    const password = e.target.password.value.trim();
-
-    if (!email || !password) {
-      setError("Please fill in all details.");
-      return;
-    }
 
     try {
       setLoading(true);
       
       const response = await axios.post(
         "http://localhost:3000/api/auth/food-partner/login", 
-        { email, password }, 
+        formData, 
         { withCredentials: true }
       );
 
       console.log("Merchant login success:", response.data);
+      toast.success("Welcome to your kitchen dashboard! Login successful.");
       
       // Update global context session parameters immediately
       await checkUserAuth();
       
-      navigate("/create-food");
+      const partnerId = response.data.foodPartner?._id || response.data.user?._id;
+      if (partnerId) {
+        navigate(`/food-partner/${partnerId}`);
+      } else {
+        // Fallback if ID is missing in response for some reason
+        navigate("/");
+      }
     } catch (err) {
       console.error("Merchant login details failure:", err);
-      setError(
-        err.response?.data?.message || 
-        "Incorrect email or password. Please try again."
-      );
+      const errMsg = err.response?.data?.message || "Incorrect email or password. Please try again.";
+      setError(errMsg);
+      toast.error(errMsg);
     } finally {
       setLoading(false);
     }
@@ -68,30 +70,32 @@ const FoodPartnerLogin = () => {
     >
       <AuthCard>
         
-        <form className="flex flex-col space-y-4" onSubmit={handleSubmit} noValidate>
+        <form className="flex flex-col space-y-4" onSubmit={handleSubmit(onSubmit)} noValidate>
           
           {/* Email Input Field */}
           <AuthInput
             label="Business Email"
             id="email"
-            name="email"
             type="email"
             icon={Mail}
             placeholder="business@example.com"
             autoComplete="email"
-            required
+            error={errors.email?.message}
+            disabled={loading}
+            {...register("email")}
           />
 
           {/* Password Input Field */}
           <AuthInput
             label="Secure Password"
             id="password"
-            name="password"
             type="password"
             icon={Lock}
             placeholder="••••••••"
             autoComplete="current-password"
-            required
+            error={errors.password?.message}
+            disabled={loading}
+            {...register("password")}
           />
 
           {/* Dynamic Error alert */}
@@ -103,7 +107,7 @@ const FoodPartnerLogin = () => {
           )}
 
           {/* Submit Button */}
-          <AuthButton loading={loading}>
+          <AuthButton loading={loading} disabled={loading}>
             <LogIn className="w-4 h-4 text-white" />
             <span>Sign In</span>
           </AuthButton>

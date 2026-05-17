@@ -16,9 +16,6 @@ const ReelFeed = ({ items = [], onLike, onSave, emptyMessage = 'No videos active
   const videoRefs = useRef(new Map())
   const [isMuted, setIsMuted] = useState(true)
   const [activeVideoId, setActiveVideoId] = useState(null)
-  
-  // Track actions locally for responsive visual state feedback
-  const [userActions, setUserActions] = useState({ liked: {}, saved: {} })
 
   useEffect(() => {
     // Autoplay/Pause logic bound to 60% dynamic view visibility
@@ -70,24 +67,12 @@ const ReelFeed = ({ items = [], onLike, onSave, emptyMessage = 'No videos active
 
   const handleLikeClick = async (e, item) => {
     e.stopPropagation()
-    if (onLike) {
-      await onLike(item)
-      setUserActions(prev => ({
-        ...prev,
-        liked: { ...prev.liked, [item._id]: !prev.liked[item._id] }
-      }))
-    }
+    if (onLike) await onLike(item)
   }
 
   const handleSaveClick = async (e, item) => {
     e.stopPropagation()
-    if (onSave) {
-      await onSave(item)
-      setUserActions(prev => ({
-        ...prev,
-        saved: { ...prev.saved, [item._id]: !prev.saved[item._id] }
-      }))
-    }
+    if (onSave) await onSave(item)
   }
 
   return (
@@ -105,8 +90,10 @@ const ReelFeed = ({ items = [], onLike, onSave, emptyMessage = 'No videos active
         )}
 
         {items.map((item) => {
-          const isLiked = userActions.liked[item._id] || item.isLiked
-          const isSaved = userActions.saved[item._id] || item.isSaved
+          // Read like/save status directly from the item
+          // (set by parent's optimistic state management)
+          const isLiked = item.isLiked || false
+          const isSaved = item.isSaved || false
 
           return (
             <section 
@@ -116,11 +103,11 @@ const ReelFeed = ({ items = [], onLike, onSave, emptyMessage = 'No videos active
               role="listitem"
             >
               
-              {/* Fullscreen Video Element */}
+              {/* Fullscreen Video Element (Absolute to prevent flex-shrinking issues) */}
               <video
                 ref={setVideoRef(item._id)}
                 data-id={item._id}
-                className="w-full h-full object-cover select-none pointer-events-none"
+                className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none z-0"
                 src={item.video}
                 muted={isMuted}
                 playsInline
@@ -128,26 +115,32 @@ const ReelFeed = ({ items = [], onLike, onSave, emptyMessage = 'No videos active
                 preload="metadata"
               />
 
+              {/* OVERLAYS MUST BE ABSOLUTE TO NOT DISTURB FLEX LAYOUT */}
+              
               {/* Modular Food Details Overlay */}
-              <div className="reel-details-container w-full">
-                <FeedOverlay 
-                  name={item.name} 
-                  description={item.description} 
-                  foodPartner={item.foodPartner} 
-                />
+              <div className="reel-details-container absolute inset-0 z-20 pointer-events-none">
+                <div className="pointer-events-auto">
+                  <FeedOverlay 
+                    name={item.name} 
+                    description={item.description} 
+                    foodPartner={item.foodPartner} 
+                  />
+                </div>
               </div>
 
               {/* Modular Action Sidebar */}
-              <div className="reel-action-container">
-                <FeedActions 
-                  item={item}
-                  isLiked={isLiked}
-                  isSaved={isSaved}
-                  isMuted={isMuted}
-                  onLikeClick={handleLikeClick}
-                  onSaveClick={handleSaveClick}
-                  onMuteClick={toggleMute}
-                />
+              <div className="reel-action-container absolute inset-0 z-30 pointer-events-none">
+                <div className="pointer-events-auto w-full h-full">
+                  <FeedActions 
+                    item={item}
+                    isLiked={isLiked}
+                    isSaved={isSaved}
+                    isMuted={isMuted}
+                    onLikeClick={handleLikeClick}
+                    onSaveClick={handleSaveClick}
+                    onMuteClick={toggleMute}
+                  />
+                </div>
               </div>
 
             </section>

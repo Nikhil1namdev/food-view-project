@@ -2,20 +2,22 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Store, User, Phone, Mail, Lock, MapPin, UserPlus, AlertCircle } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import toast from 'react-hot-toast';
 import AuthLayout from '../../components/auth/AuthLayout';
 import AuthCard from '../../components/auth/AuthCard';
 import AuthInput from '../../components/auth/AuthInput';
 import AuthButton from '../../components/auth/AuthButton';
 import { useAuth } from '../../context/AuthContext';
+import { FoodPartnerRegisterSchema } from '../../schemas/auth.schema';
 
 // =========================================================================
 // FOOD PARTNER / MERCHANT REGISTRATION PORTAL (FoodPartnerRegister)
 // =========================================================================
-// Allows new street food and restaurant owners to onboard their kitchen.
-// Includes:
-// - Role swap selector gates
-// - Two-column inputs grid for Contact and Phone numbers
-// - Submit loaders and dynamic error warning blocks
+// Allows new street food and restaurant owners to onboard their kitchen using:
+// - React Hook Form for direct binds
+// - Zod validation schema for contact and address strict checks
 const FoodPartnerRegister = () => {
   const navigate = useNavigate();
   const { checkUserAuth } = useAuth();
@@ -23,21 +25,13 @@ const FoodPartnerRegister = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const { register, handleSubmit, formState: { errors } } = useForm({
+    resolver: zodResolver(FoodPartnerRegisterSchema),
+    mode: "onTouched"
+  });
+
+  const onSubmit = async (formData) => {
     setError("");
-
-    const businessName = e.target.businessName.value.trim();
-    const contactName = e.target.contactName.value.trim();
-    const phone = e.target.phone.value.trim();
-    const email = e.target.email.value.trim();
-    const password = e.target.password.value.trim();
-    const address = e.target.address.value.trim();
-
-    if (!businessName || !contactName || !phone || !email || !password || !address) {
-      setError("Please fill in all registration fields.");
-      return;
-    }
 
     try {
       setLoading(true);
@@ -45,28 +39,33 @@ const FoodPartnerRegister = () => {
       const response = await axios.post(
         "http://localhost:3000/api/auth/food-partner/register", 
         {
-          name: businessName,
-          contactName,
-          phone,
-          email,
-          password,
-          address
+          name: formData.businessName,
+          contactName: formData.contactName,
+          phone: formData.phone,
+          email: formData.email,
+          password: formData.password,
+          address: formData.address
         },
         { withCredentials: true }
       );
 
       console.log("Merchant registration success:", response.data);
+      toast.success("Merchant profile onboarding initiated! Registration successful.");
       
       // Update global context session parameters immediately
       await checkUserAuth();
       
-      navigate("/create-food");
+      const partnerId = response.data.foodPartner?._id || response.data.user?._id;
+      if (partnerId) {
+        navigate(`/food-partner/${partnerId}`);
+      } else {
+        navigate("/");
+      }
     } catch (err) {
       console.error("Merchant registration failure:", err);
-      setError(
-        err.response?.data?.message || 
-        "Failed to create account. Verify business credentials and try again."
-      );
+      const errMsg = err.response?.data?.message || "Failed to create account. Verify business credentials and try again.";
+      setError(errMsg);
+      toast.error(errMsg);
     } finally {
       setLoading(false);
     }
@@ -92,17 +91,18 @@ const FoodPartnerRegister = () => {
           </span>
         </div>
 
-        <form className="flex flex-col space-y-3.5" onSubmit={handleSubmit} noValidate>
+        <form className="flex flex-col space-y-3.5" onSubmit={handleSubmit(onSubmit)} noValidate>
           
           {/* Business Name Input */}
           <AuthInput
             label="Business / Kitchen Name"
             id="businessName"
-            name="businessName"
             icon={Store}
             placeholder="e.g., Tasty Street Bites"
             autoComplete="organization"
-            required
+            error={errors.businessName?.message}
+            disabled={loading}
+            {...register("businessName")}
           />
 
           {/* Grid: Contact & Phone */}
@@ -110,22 +110,24 @@ const FoodPartnerRegister = () => {
             <AuthInput
               label="Contact Name"
               id="contactName"
-              name="contactName"
               icon={User}
               placeholder="Jane Doe"
               autoComplete="name"
-              required
+              error={errors.contactName?.message}
+              disabled={loading}
+              {...register("contactName")}
             />
 
             <AuthInput
               label="Contact Phone"
               id="phone"
-              name="phone"
               type="tel"
               icon={Phone}
               placeholder="+91 90000 00000"
               autoComplete="tel"
-              required
+              error={errors.phone?.message}
+              disabled={loading}
+              {...register("phone")}
             />
           </div>
 
@@ -133,35 +135,38 @@ const FoodPartnerRegister = () => {
           <AuthInput
             label="Business Email"
             id="email"
-            name="email"
             type="email"
             icon={Mail}
             placeholder="business@example.com"
             autoComplete="email"
-            required
+            error={errors.email?.message}
+            disabled={loading}
+            {...register("email")}
           />
 
           {/* Password Input */}
           <AuthInput
             label="Secure Password"
             id="password"
-            name="password"
             type="password"
             icon={Lock}
             placeholder="••••••••"
             autoComplete="new-password"
-            required
+            error={errors.password?.message}
+            disabled={loading}
+            {...register("password")}
           />
 
           {/* Address Input */}
           <AuthInput
             label="Kitchen Address"
             id="address"
-            name="address"
             icon={MapPin}
             placeholder="e.g., 123 Market Street, Block B"
             autoComplete="street-address"
-            required
+            error={errors.address?.message}
+            disabled={loading}
+            {...register("address")}
           />
 
           {/* Dynamic Error alert */}
@@ -173,7 +178,7 @@ const FoodPartnerRegister = () => {
           )}
 
           {/* Submit Button */}
-          <AuthButton loading={loading} className="mt-2">
+          <AuthButton loading={loading} className="mt-2" disabled={loading}>
             <UserPlus className="w-4 h-4 text-white" />
             <span>Onboard Kitchen</span>
           </AuthButton>
