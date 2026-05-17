@@ -1,74 +1,165 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import '../../styles/auth-shared.css';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { User, Mail, Lock, UserPlus, AlertCircle } from 'lucide-react';
+import AuthLayout from '../../components/auth/AuthLayout';
+import AuthCard from '../../components/auth/AuthCard';
+import AuthInput from '../../components/auth/AuthInput';
+import AuthButton from '../../components/auth/AuthButton';
+import { useAuth } from '../../context/AuthContext';
 
+// =========================================================================
+// CONSUMER REGISTER REGISTRATION PORTAL (UserRegister)
+// =========================================================================
+// Handles self-registration for standard platform customers.
+// - Supports visual role swapping indicators
+// - Direct inline validation and async submit trackers
 const UserRegister = () => {
+  const navigate = useNavigate();
+  const { checkUserAuth } = useAuth();
+  
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-    const navigate = useNavigate();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    const firstName = e.target.firstName.value.trim();
+    const lastName = e.target.lastName.value.trim();
+    const email = e.target.email.value.trim();
+    const password = e.target.password.value.trim();
 
-        const firstName = e.target.firstName.value;
-        const lastName = e.target.lastName.value;
-        const email = e.target.email.value;
-        const password = e.target.password.value;
+    if (!firstName || !lastName || !email || !password) {
+      setError("Please fill in all registration fields.");
+      return;
+    }
 
-
-        const response = await axios.post("http://localhost:3000/api/auth/user/register", {
-            fullName: firstName + " " + lastName,
-            email,
-            password
+    try {
+      setLoading(true);
+      
+      const response = await axios.post(
+        "http://localhost:3000/api/auth/user/register", 
+        {
+          fullName: `${firstName} ${lastName}`,
+          email,
+          password
         },
-        { //ye line likhne se cookies ke andar token store hota hai jabb axios use karte hai
-            withCredentials: true
-        })
+        { withCredentials: true }
+      );
 
-        console.log(response.data);
-  ///jese hi user register ho usko home page pr redirect kara
-        navigate("/")
+      console.log("Registration success:", response.data);
+      
+      // Update global context session parameters immediately
+      await checkUserAuth();
+      
+      navigate("/");
+    } catch (err) {
+      console.error("Registration details failure:", err);
+      setError(
+        err.response?.data?.message || 
+        "Failed to create account. Email may already be registered."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    };
-
-    return (
-        <div className="auth-page-wrapper">
-            <div className="auth-card" role="region" aria-labelledby="user-register-title">
-                <header>
-                    <h1 id="user-register-title" className="auth-title">Create your account</h1>
-                    <p className="auth-subtitle">Join to explore and enjoy delicious meals.</p>
-                </header>
-                <nav className="auth-alt-action" style={{ marginTop: '-4px' }}>
-                    <strong style={{ fontWeight: 600 }}>Switch:</strong> <Link to="/user/register">User</Link> • <Link to="/food-partner/register">Food partner</Link>
-                </nav>
-                <form className="auth-form" onSubmit={handleSubmit} noValidate>
-                    <div className="two-col">
-                        <div className="field-group">
-                            <label htmlFor="firstName">First Name</label>
-                            <input id="firstName" name="firstName" placeholder="Jane" autoComplete="given-name" />
-                        </div>
-                        <div className="field-group">
-                            <label htmlFor="lastName">Last Name</label>
-                            <input id="lastName" name="lastName" placeholder="Doe" autoComplete="family-name" />
-                        </div>
-                    </div>
-                    <div className="field-group">
-                        <label htmlFor="email">Email</label>
-                        <input id="email" name="email" type="email" placeholder="you@example.com" autoComplete="email" />
-                    </div>
-                    <div className="field-group">
-                        <label htmlFor="password">Password</label>
-                        <input id="password" name="password" type="password" placeholder="••••••••" autoComplete="new-password" />
-                    </div>
-                    <button className="auth-submit" type="submit">Sign Up</button>
-                </form>
-                <div className="auth-alt-action">
-                    Already have an account? <Link to="/user/login">Sign in</Link>
-                </div>
-            </div>
+  return (
+    <AuthLayout 
+      title="Create account" 
+      subtitle="Sign up as consumer to swipe food reels and order now."
+    >
+      <AuthCard>
+        
+        {/* Toggle Portal Switcher */}
+        <div className="flex items-center justify-between bg-zinc-950/50 border border-zinc-800 p-1 rounded-xl mb-6 select-none text-[10px] font-black tracking-wide">
+          <span className="flex-1 text-center py-2 bg-orange-500/10 border border-orange-500/20 text-orange-400 rounded-lg">
+            Consumer User
+          </span>
+          <Link 
+            to="/food-partner/register" 
+            className="flex-1 text-center py-2 text-neutral-500 hover:text-neutral-300 transition-colors"
+          >
+            Food Partner
+          </Link>
         </div>
-    );
+
+        <form className="flex flex-col space-y-4" onSubmit={handleSubmit} noValidate>
+          
+          {/* Two Columns Grid for First & Last Names */}
+          <div className="grid grid-cols-2 gap-4">
+            <AuthInput
+              label="First Name"
+              id="firstName"
+              name="firstName"
+              icon={User}
+              placeholder="Jane"
+              autoComplete="given-name"
+              required
+            />
+
+            <AuthInput
+              label="Last Name"
+              id="lastName"
+              name="lastName"
+              icon={User}
+              placeholder="Doe"
+              autoComplete="family-name"
+              required
+            />
+          </div>
+
+          {/* Email Input Field */}
+          <AuthInput
+            label="Email Address"
+            id="email"
+            name="email"
+            type="email"
+            icon={Mail}
+            placeholder="jane@example.com"
+            autoComplete="email"
+            required
+          />
+
+          {/* Password Input Field */}
+          <AuthInput
+            label="Secure Password"
+            id="password"
+            name="password"
+            type="password"
+            icon={Lock}
+            placeholder="••••••••"
+            autoComplete="new-password"
+            required
+          />
+
+          {/* Dynamic Error alert */}
+          {error && (
+            <div className="flex items-center space-x-2 bg-red-500/10 border border-red-500/25 p-3.5 rounded-2xl text-[11px] font-bold text-red-400 select-none animate-pulse">
+              <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
+              <span>{error}</span>
+            </div>
+          )}
+
+          {/* Submit Button */}
+          <AuthButton loading={loading}>
+            <UserPlus className="w-4 h-4 text-white" />
+            <span>Create Account</span>
+          </AuthButton>
+
+        </form>
+
+        <div className="text-center mt-6 border-t border-white/5 pt-4 text-xs text-neutral-500 font-semibold select-none">
+          Already have an account?{' '}
+          <Link to="/user/login" className="text-orange-500 hover:text-orange-400 hover:underline">
+            Sign In
+          </Link>
+        </div>
+
+      </AuthCard>
+    </AuthLayout>
+  );
 };
 
 export default UserRegister;

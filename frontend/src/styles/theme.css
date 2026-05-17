@@ -1,66 +1,158 @@
-/* CSS Theme Variables (Light & Dark via system preference) */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Sora:wght@400;500;600;700;800;900&display=swap');
+
+/* =========================================================================
+   GLOBAL DESIGN SYSTEM UTILITIES & CUSTOM COMPONENTS
+   =========================================================================
+   This stylesheet acts as the visual bedrock of the ByteBite product.
+   By coupling utility-first Tailwind classes with precise CSS custom properties:
+   - Consistent typography scaling is maintained (Sora for headers, Inter for text).
+   - Glassmorphic card variables adapt smoothly inside various layout sections.
+   - Micro-interaction hover tokens are standardized globally.
+   ========================================================================= */
+
 :root {
-  --color-bg: #f9fafb;
-  --color-surface: #ffffff;
-  --color-surface-alt: #f1f5f9;
-  --color-border: #e2e8f0;
-  --color-text: #0f172a;
-  --color-text-secondary: #475569;
-  --color-accent: #2563eb;
-  --color-accent-hover: #1d4ed8;
-  --color-danger: #dc2626;
-
-  --radius-xs: 2px;
-  --radius-sm: 4px;
-  --radius-md: 8px;
-
-  --font-stack: system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
-
-  --space-1: 4px;
-  --space-2: 8px;
-  --space-3: 12px;
-  --space-4: 16px;
-  --space-5: 20px;
-  --space-6: 24px;
-  --space-8: 32px;
-
-  --shadow-sm: 0 1px 2px rgba(0,0,0,.06);
-  --shadow-md: 0 4px 12px -2px rgba(0,0,0,.08),0 2px 4px -2px rgba(0,0,0,.06);
-
-  --transition-base: 120ms cubic-bezier(.4,0,.2,1);
+  /* Dynamic fonts mappings */
+  --font-heading: 'Sora', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  
+  /* Standardized container max-bounds */
+  --container-max-width: 1200px;
+  
+  /* Controlled Premium Accent Glows (Less saturated, elegant light effects) */
+  --glow-orange: rgba(249, 115, 22, 0.08);
+  --glow-red: rgba(239, 68, 68, 0.05);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-bg: #0f172a; /* slate-900 */
-    --color-surface: #1e293b; /* slate-800 */
-    --color-surface-alt: #24324a; /* custom */
-    --color-border: #334155; /* slate-700 */
-    --color-text: #f1f5f9; /* slate-100 */
-    --color-text-secondary: #94a3b8; /* slate-400 */
-    --color-accent: #3b82f6; /* blue-500 */
-    --color-accent-hover: #60a5fa; /* blue-400 */
-    --color-danger: #f87171; /* red-400 */
-    --shadow-sm: 0 1px 2px rgba(0,0,0,.5);
-    --shadow-md: 0 4px 18px -4px rgba(0,0,0,.5),0 2px 6px -2px rgba(0,0,0,.4);
+/* Base HTML structural defaults overrides */
+html,
+body {
+  font-family: var(--font-body);
+  background-color: #09090b; /* Zinc 950 base */
+  color: #f4f4f5; /* Zinc 100 text default */
+  scroll-behavior: smooth;
+  height: 100%;
+  width: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+}
+
+/* =========================================================================
+   1. PREMIUM CUSTOM UTILITY CLASSES
+   ========================================================================= */
+
+/* Elevated dark glass card with high depth, crisp borders, and soft layering */
+.glass-card {
+  background: rgba(24, 24, 27, 0.75); /* Zinc-900 base with opacity */
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(39, 39, 42, 0.6); /* Zinc-800 sharp outline */
+  box-shadow: 
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 20px 40px -8px rgba(0, 0, 0, 0.6);
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Hover popup effects for card components */
+.glass-card:hover {
+  border-color: rgba(249, 115, 22, 0.2);
+  box-shadow: 
+    0 4px 6px -1px rgba(0, 0, 0, 0.15),
+    0 24px 48px -6px rgba(0, 0, 0, 0.75),
+    0 0 24px -2px rgba(249, 115, 22, 0.04);
+}
+
+/* Ambient glow card (ideal for active, highlighted or selected statuses) */
+.glass-card-accent {
+  background: rgba(24, 24, 27, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(249, 115, 22, 0.3); /* Balanced Orange Accent border */
+  box-shadow: 
+    0 16px 36px 0 rgba(0, 0, 0, 0.5),
+    0 0 30px -4px rgba(249, 115, 22, 0.06);
+}
+
+/* Controlled startup typography gradients */
+.text-gradient {
+  background: linear-gradient(135deg, #f97316 0%, #ef4444 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gradient-purple {
+  background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Grid padding presets */
+.section-spacing {
+  padding-top: 5rem;
+  padding-bottom: 5rem;
+}
+
+@media (max-width: 768px) {
+  .section-spacing {
+    padding-top: 3rem;
+    padding-bottom: 3rem;
   }
 }
 
-/* Base element theming (can be imported once globally) */
-body {
-  font-family: var(--font-stack);
-  background: var(--color-bg);
-  color: var(--color-text);
-  -webkit-font-smoothing: antialiased;
-  line-height: 1.4;
+/* Premium primary CTA buttons with spring mechanics on press */
+.btn-primary {
+  background: linear-gradient(135deg, #f97316 0%, #dc2626 100%); /* Orange-500 to Red-600 */
+  color: #ffffff;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  border-radius: 1rem;
+  box-shadow: 0 4px 14px 0 rgba(249, 115, 22, 0.15);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-a {
-  color: var(--color-accent);
-  text-decoration: none;
-  transition: color var(--transition-base);
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 
+    0 6px 20px 0 rgba(249, 115, 22, 0.25),
+    0 0 12px 0 rgba(220, 38, 38, 0.1);
 }
 
-a:hover, a:focus-visible { color: var(--color-accent-hover); }
+.btn-primary:active {
+  transform: translateY(0.5px);
+  box-shadow: 0 2px 8px 0 rgba(249, 115, 22, 0.1);
+}
 
-::selection { background: var(--color-accent); color: #fff; }
+/* =========================================================================
+   2. CUSTOM UTILITY SCROLLBAR ACTIONS
+   ========================================================================= */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #09090b; /* Zinc 950 */
+}
+
+::-webkit-scrollbar-thumb {
+  background: #27272a; /* Zinc 800 */
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #f97316; /* Orange 500 */
+}
+
+/* Disable scrollbars on specific containers */
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}

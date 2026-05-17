@@ -15,15 +15,8 @@ app.use(
 );
 app.use(cookieParser());
 
-// Conditionally parse JSON - skip for multipart/form-data to avoid corrupting file uploads
-app.use((req, res, next) => {
-  const contentType = req.headers["content-type"] || "";
-  if (!contentType.includes("multipart/form-data")) {
-    express.json()(req, res, next);
-  } else {
-    next();
-  }
-});
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 app.get("/", (req, res) => {
   res.send("Hello World");

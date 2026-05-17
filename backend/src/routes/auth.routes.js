@@ -17,6 +17,7 @@ router.post('/food-partner/register', authController.registerFoodPartner)
 router.post('/food-partner/login', authController.loginFoodPartner)
 router.get('/food-partner/logout', authController.logoutFoodPartner)
 
-
+// Unified Session Verification route
+router.get('/check-auth', authController.checkAuth)
 
 module.exports = router;

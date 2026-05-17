@@ -190,7 +190,65 @@ function logoutFoodPartner(req, res) {
     });
 }
 
+// =========================================================================
+// ACTIVE SESSION CHECK CONTROLLER
+// =========================================================================
+// Verifies presence and validity of JWT token from secure HttpOnly cookies.
+// Checks if token owner belongs to the Normal User or Food Partner database.
+// Eliminates client-side JWT local storage, preventing XSS-based hijacking.
+async function checkAuth(req, res) {
+    const token = req.cookies.token;
+    
+    if (!token) {
+        return res.status(200).json({ 
+            authenticated: false, 
+            message: "No active session detected" 
+        });
+    }
 
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        
+        // 1. Check if token belongs to User collection
+        let user = await userModel.findById(decoded.id).select("-password");
+        if (user) {
+            return res.status(200).json({
+                authenticated: true,
+                role: "user",
+                user: {
+                    _id: user._id,
+                    email: user.email,
+                    fullName: user.fullName
+                }
+            });
+        }
+
+        // 2. Check if token belongs to Food Partner collection
+        let foodPartner = await foodPartnerModel.findById(decoded.id).select("-password");
+        if (foodPartner) {
+            return res.status(200).json({
+                authenticated: true,
+                role: "partner",
+                user: {
+                    _id: foodPartner._id,
+                    email: foodPartner.email,
+                    name: foodPartner.name
+                }
+            });
+        }
+
+        return res.status(200).json({ 
+            authenticated: false, 
+            message: "Session token matched no active profile document" 
+        });
+
+    } catch (err) {
+        return res.status(200).json({ 
+            authenticated: false, 
+            message: "Session expired or invalid validation key" 
+        });
+    }
+}
 
 //ek file se ye sab export karne ke liye nhi to hum ek hi controller export kar pate
 module.exports = {
@@ -199,5 +257,6 @@ module.exports = {
     logoutUser,
     registerFoodPartner,
     loginFoodPartner,
-    logoutFoodPartner
+    logoutFoodPartner,
+    checkAuth
 }
