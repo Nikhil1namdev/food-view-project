@@ -44,7 +44,7 @@ const Navbar = () => {
           {role === 'user' && (
             <>
               <NavLink 
-                to="/" 
+                to="/feed" 
                 end 
                 className={({ isActive }) => cn(
                   "hover:text-orange-500 transition-colors duration-200", 

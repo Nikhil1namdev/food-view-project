@@ -50,7 +50,7 @@ const AppLayout = () => {
             {role === 'user' && (
               <>
                 <NavLink 
-                  to="/" 
+                  to="/feed" 
                   end 
                   className={({ isActive }) => cn(
                     "flex items-center space-x-3 px-4 py-3 rounded-xl text-xs font-black tracking-tight transition-all duration-300 group hover:bg-white/5",

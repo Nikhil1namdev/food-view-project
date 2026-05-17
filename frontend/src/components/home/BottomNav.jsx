@@ -21,7 +21,7 @@ const BottomNav = () => {
       
       {/* 1. Feed Home Route */}
       <NavLink 
-        to="/" 
+        to="/feed" 
         end 
         className={({ isActive }) => cn(
           "flex flex-col items-center justify-center w-12 h-12 rounded-xl transition-all duration-300 active:scale-90",

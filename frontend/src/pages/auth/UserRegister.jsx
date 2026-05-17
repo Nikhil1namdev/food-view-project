@@ -53,7 +53,7 @@ const UserRegister = () => {
       // Update global context session parameters immediately
       await checkUserAuth();
       
-      navigate("/");
+      navigate("/feed");
     } catch (err) {
       console.error("Registration details failure:", err);
       const errMsg = err.response?.data?.message || "Failed to create account. Email may already be registered.";

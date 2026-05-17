@@ -7,6 +7,7 @@ import FoodPartnerRegister from '../pages/auth/FoodPartnerRegister';
 import FoodPartnerLogin from '../pages/auth/FoodPartnerLogin';
 import Home from '../pages/general/Home';
 import Saved from '../pages/general/Saved';
+import LandingPage from '../pages/general/LandingPage';
 import Layout from '../components/Layout';
 import CreateFood from '../pages/food-partner/CreateFood';
 import Profile from '../pages/food-partner/Profile';
@@ -68,13 +69,17 @@ const AppRoutes = () => {
                     <GuestRoute><FoodPartnerLogin /></GuestRoute>
                 } />
 
+                {/* ── PUBLIC LANDING PAGE ── */}
+                {/* Independent landing page to capture organic SEO & traffic */}
+                <Route path="/" element={<LandingPage />} />
+
                 {/* ── PROTECTED APP SHELL ── */}
                 {/* All routes below share the persistent Layout (sidebar + nav) */}
                 <Route element={<Layout />}>
                     
                     {/* Consumer-only feeds (role: 'user') */}
                     <Route element={<ProtectedRoute allowedRoles={['user']} />}>
-                        <Route path="/" element={<Home />} />
+                        <Route path="/feed" element={<Home />} />
                         <Route path="/saved" element={<Saved />} />
                     </Route>
 

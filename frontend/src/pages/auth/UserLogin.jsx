@@ -49,7 +49,7 @@ const UserLogin = () => {
       // Update global context session parameters immediately
       await checkUserAuth();
       
-      navigate("/");
+      navigate("/feed");
     } catch (err) {
       console.error("Login failure details:", err);
       const errMsg = err.response?.data?.message || "Incorrect email or password. Please try again.";

@@ -1,7 +1,7 @@
-import React from 'react'
-import { Navigate, Outlet, useLocation } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
-import { Play } from 'lucide-react'
+import React from "react";
+import { Navigate, Outlet, useLocation } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { Play } from "lucide-react";
 
 // =========================================================================
 // SECURITY LAYER ROUTE GATING (ProtectedRoute)
@@ -26,56 +26,51 @@ import { Play } from 'lucide-react'
 //    Until that async call resolves, this guard displays a high-fidelity
 //    loading animation to prevent flash-of-unauthorized-content (FOUC).
 //
-// Usage in routes:
-//   <Route element={<ProtectedRoute allowedRoles={['user']} />}>
-//     <Route path="/" element={<Home />} />
-//   </Route>
+// FIXED OVERLAY UX:
+//   Uses `fixed inset-0 z-[9999]` to cover the entire screen during initial
+//   session boot, hiding the half-loaded sidebar and preventing horizontal
+//   scrollbars (the w-screen + sidebar flex-pushing bug).
 const ProtectedRoute = ({ allowedRoles = [], children }) => {
-  const { isAuthenticated, role, loading, user } = useAuth()
-  const location = useLocation()
+  const { isAuthenticated, role, loading, user } = useAuth();
+  const location = useLocation();
 
   // ─── Phase 1: Session Verification In Progress ───
-  // Display premium loading spinner while JWT cookie is being verified
-  // against the backend. This prevents unauthorized content flashes.
+  // Display premium full-screen loading spinner while JWT cookie is being verified
+  // against the backend. Uses fixed absolute positioning to cover all UI layout shells.
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen w-screen bg-black text-white select-none">
-        <div className="relative flex items-center justify-center">
-          <div className="animate-ping absolute inline-flex h-12 w-12 rounded-full bg-primary/30 opacity-75"></div>
-          <Play className="w-8 h-8 text-primary animate-pulse relative z-10" />
-        </div>
-        <p className="text-xs font-black tracking-widest text-muted-foreground uppercase mt-6 animate-pulse">
-          Securing Session...
+      <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-zinc-950 text-white select-none space-y-6">
+        <div className="custom-loader"></div>
+        <p className="text-[10px] font-black tracking-widest text-zinc-500 uppercase animate-pulse">
+          Serving deliciousness...
         </p>
       </div>
-    )
+    );
   }
 
   // ─── Phase 2: Authentication Gate ───
   // No valid session detected → redirect to registration portal.
-  // We store the attempted URL in state.from so login pages can
-  // redirect the user back to their original destination after auth.
   if (!isAuthenticated) {
-    return <Navigate to="/register" state={{ from: location }} replace />
+    return <Navigate to="/register" state={{ from: location }} replace />;
   }
 
   // ─── Phase 3: Role-Based Access Control (RBAC) ───
   // User is authenticated but doesn't have the required role for this route.
-  // Instead of showing a blank page or error, redirect them to their
-  // role-appropriate home page for a seamless experience.
   if (allowedRoles.length > 0 && !allowedRoles.includes(role)) {
-    // Partners trying to access consumer pages → send to their dashboard
-    if (role === 'partner') {
-      const partnerId = user?._id || user?.id
-      return <Navigate to={partnerId ? `/food-partner/${partnerId}` : '/register'} replace />
+    if (role === "partner") {
+      const partnerId = user?._id || user?.id;
+      return (
+        <Navigate
+          to={partnerId ? `/food-partner/${partnerId}` : "/register"}
+          replace
+        />
+      );
     }
-    // Consumers trying to access partner pages → send to home feed
-    return <Navigate to="/" replace />
+    return <Navigate to="/feed" replace />;
   }
 
   // ─── Phase 4: Authorized Access Granted ───
-  // Render children (if directly nested) or Outlet (if wrapping parent route)
-  return children ? children : <Outlet />
-}
+  return children ? children : <Outlet />;
+};
 
-export default ProtectedRoute
+export default ProtectedRoute;
