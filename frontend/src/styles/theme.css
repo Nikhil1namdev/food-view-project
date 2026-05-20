@@ -27,13 +27,20 @@
 html,
 body {
   font-family: var(--font-body);
-  background-color: #09090b; /* Zinc 950 base */
-  color: #f4f4f5; /* Zinc 100 text default */
+  background-color: #fafafa; /* Premium Light Mode background */
+  color: #18181b; /* Premium Light Mode text */
   scroll-behavior: smooth;
   height: 100%;
   width: 100%;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.35s ease, color 0.35s ease, border-color 0.35s ease;
+}
+
+html.dark,
+html.dark body {
+  background-color: #09090b; /* Existing premium dark Zinc 950 base */
+  color: #f4f4f5; /* Existing dark Zinc 100 text default */
 }
 
 h1, h2, h3, h4, h5, h6 {

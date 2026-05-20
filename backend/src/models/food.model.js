@@ -23,7 +23,26 @@ const foodSchema = new mongoose.Schema({
     savesCount: {
         type: Number,
         default: 0
-    }
+    },
+    price: {
+        type: Number,
+        min: 0,
+        default: 199,
+    },
+    category: {
+        type: String,
+        default: "Indian",
+    },
+    isVeg: {
+        type: Boolean,
+        default: true,
+    },
+    rating: {
+        type: Number,
+        min: 0,
+        max: 5,
+        default: 4.2,
+    },
 })
 
 

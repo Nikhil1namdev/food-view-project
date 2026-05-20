@@ -76,9 +76,14 @@ const ReelFeed = ({ items = [], onLike, onSave, emptyMessage = 'No videos active
   }
 
   return (
-    <div className="w-full h-full flex items-center justify-center bg-black/95">
+    <div className="w-full h-full flex items-center justify-center bg-[#050507] rounded-xl md:rounded-2xl overflow-hidden relative group">
+      {/* Cinematic ambient radial glow */}
+      <div className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(circle_at_center,_rgba(249,115,22,0.12)_0%,_rgba(5,5,7,1)_60%)] opacity-80 transition-opacity duration-700" />
+      <div className="pointer-events-none absolute inset-y-0 left-0 w-1/3 bg-gradient-to-r from-black to-transparent z-0" />
+      <div className="pointer-events-none absolute inset-y-0 right-0 w-1/3 bg-gradient-to-l from-black to-transparent z-0" />
+      
       <div 
-        className="w-full h-[calc(100vh-4rem)] md:h-[90vh] max-w-[420px] bg-black md:rounded-2xl border border-zinc-900 md:shadow-2xl overflow-y-scroll snap-y snap-mandatory scrollbar-none relative" 
+        className="w-full h-full max-w-[420px] bg-black md:rounded-2xl border-x md:border border-zinc-900 shadow-[0_0_60px_rgba(249,115,22,0.05)] overflow-y-scroll snap-y snap-mandatory scrollbar-none relative z-10" 
         role="list"
       >
         

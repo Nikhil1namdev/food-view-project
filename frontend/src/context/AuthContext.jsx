@@ -47,7 +47,7 @@ export const AuthProvider = ({ children }) => {
   const checkUserAuth = useCallback(async () => {
     try {
       setLoading(true)
-      const response = await axios.get("http://localhost:3000/api/auth/check-auth", {
+      const response = await axios.get("http://localhost:5000/api/auth/check-auth", {
         withCredentials: true
       })
       
@@ -88,8 +88,8 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true)
       const logoutUrl = currentRole === 'partner' 
-        ? "http://localhost:3000/api/auth/food-partner/logout"
-        : "http://localhost:3000/api/auth/user/logout"
+        ? "http://localhost:5000/api/auth/food-partner/logout"
+        : "http://localhost:5000/api/auth/user/logout"
 
       await axios.get(logoutUrl, { withCredentials: true })
       toast.success("Successfully logged out. See you soon!")

@@ -3,6 +3,7 @@ import './App.css'
 import './styles/theme.css'
 import AppRoutes from './routes/AppRoutes'
 import { AuthProvider } from './context/AuthContext'
+import { useTheme } from './hooks/useTheme'
 
 import { Toaster } from 'react-hot-toast'
 
@@ -12,6 +13,8 @@ import { Toaster } from 'react-hot-toast'
 // Bootstraps global context configurations (AuthProvider) and kicks off
 // the React Router mapping.
 function App() {
+  useTheme(); // Initialize and apply the theme on app load
+
   return (
     <AuthProvider>
       <AppRoutes />

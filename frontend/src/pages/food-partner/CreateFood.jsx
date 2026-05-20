@@ -115,7 +115,7 @@ const CreateFood = () => {
       // We pass the formData to Axios, setting multipart/form-data.
       // The backend uses Multer to read the buffer and ImageKit to stream it.
       await axios.post(
-        "http://localhost:3000/api/food",
+        "http://localhost:5000/api/food",
         formData,
         {
           withCredentials: true,

@@ -18,7 +18,7 @@ const FeedActions = ({
   onCommentClick 
 }) => {
   return (
-    <div className="absolute right-4 bottom-24 z-30 flex flex-col items-center space-y-5 select-none">
+    <div className="absolute right-4 top-1/2 -translate-y-1/2 z-30 flex flex-col items-center space-y-5 select-none">
       
       {/* Sound Toggle Action */}
       <button 

@@ -38,7 +38,7 @@ const UserLogin = () => {
       setLoading(true);
       
       const response = await axios.post(
-        "http://localhost:3000/api/auth/user/login", 
+        "http://localhost:5000/api/auth/user/login", 
         formData, 
         { withCredentials: true }
       );
@@ -61,11 +61,11 @@ const UserLogin = () => {
   };
 
   const handleGoogleLogin = () => {
-    window.location.href = "http://localhost:3000/api/auth/google";
+    window.location.href = "http://localhost:5000/api/auth/google";
   };
 
   const handleGithubLogin = () => {
-    window.location.href = "http://localhost:3000/api/auth/github";
+    window.location.href = "http://localhost:5000/api/auth/github";
   };
 
   return (

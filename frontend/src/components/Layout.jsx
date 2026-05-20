@@ -1,6 +1,7 @@
 import React from 'react'
 import AppLayout from '../layouts/AppLayout'
 import MobileLayout from '../layouts/MobileLayout'
+import ScrollToTop from './ScrollToTop'
 
 // =========================================================================
 // RESPONSIVE VIEWPORT LAYOUT DISPATCHER (Layout)
@@ -15,6 +16,7 @@ const Layout = () => {
     <>
       <AppLayout />
       <MobileLayout />
+      <ScrollToTop />
     </>
   )
 }

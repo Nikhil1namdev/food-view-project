@@ -38,7 +38,7 @@ const UserRegister = () => {
       setLoading(true);
       
       const response = await axios.post(
-        "http://localhost:3000/api/auth/user/register", 
+        "http://localhost:5000/api/auth/user/register", 
         {
           fullName: `${formData.firstName} ${formData.lastName}`,
           email: formData.email,
@@ -65,11 +65,11 @@ const UserRegister = () => {
   };
 
   const handleGoogleLogin = () => {
-    window.location.href = "http://localhost:3000/api/auth/google";
+    window.location.href = "http://localhost:5000/api/auth/google";
   };
 
   const handleGithubLogin = () => {
-    window.location.href = "http://localhost:3000/api/auth/github";
+    window.location.href = "http://localhost:5000/api/auth/github";
   };
 
   return (

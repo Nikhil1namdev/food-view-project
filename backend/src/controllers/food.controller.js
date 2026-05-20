@@ -40,6 +40,10 @@ async function createFood(req, res) {
       description: req.body.description,
       video: fileUploadResult.url,
       foodPartner: req.foodPartner._id,
+      ...(req.body.price != null && { price: Number(req.body.price) }),
+      ...(req.body.category && { category: req.body.category }),
+      ...(req.body.isVeg != null && { isVeg: req.body.isVeg === "true" || req.body.isVeg === true }),
+      ...(req.body.rating != null && { rating: Number(req.body.rating) }),
     });
 
     //201 isliye jab koi naya resource create hota hai to 201 status code dete hai
