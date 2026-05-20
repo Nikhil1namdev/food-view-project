@@ -124,28 +124,20 @@ const ReelFeed = ({ items = [], onLike, onSave, emptyMessage = 'No videos active
               
               {/* Modular Food Details Overlay */}
               <div className="reel-details-container absolute inset-0 z-20 pointer-events-none">
-                <div className="pointer-events-auto">
-                  <FeedOverlay 
-                    name={item.name} 
-                    description={item.description} 
-                    foodPartner={item.foodPartner} 
-                  />
-                </div>
+                <FeedOverlay item={item} />
               </div>
 
               {/* Modular Action Sidebar */}
               <div className="reel-action-container absolute inset-0 z-30 pointer-events-none">
-                <div className="pointer-events-auto w-full h-full">
-                  <FeedActions 
-                    item={item}
-                    isLiked={isLiked}
-                    isSaved={isSaved}
-                    isMuted={isMuted}
-                    onLikeClick={handleLikeClick}
-                    onSaveClick={handleSaveClick}
-                    onMuteClick={toggleMute}
-                  />
-                </div>
+                <FeedActions 
+                  item={item}
+                  isLiked={isLiked}
+                  isSaved={isSaved}
+                  isMuted={isMuted}
+                  onLikeClick={handleLikeClick}
+                  onSaveClick={handleSaveClick}
+                  onMuteClick={toggleMute}
+                />
               </div>
 
             </section>

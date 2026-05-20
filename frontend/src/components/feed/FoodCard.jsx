@@ -1,6 +1,7 @@
 import { useRef } from "react";
 import { Link } from "react-router-dom";
-import { Bookmark, Heart, Store, TrendingUp } from "lucide-react";
+import { Bookmark, Heart, Store, TrendingUp, ShoppingCart } from "lucide-react";
+import { useCart } from "../../hooks/useCart";
 import { cn } from "../../lib/utils";
 import { formatPrice } from "../../lib/foodFeed";
 import VegBadge from "./VegBadge";
@@ -8,6 +9,7 @@ import RatingStars from "./RatingStars";
 
 export default function FoodCard({ item, onLike, onSave }) {
   const videoRef = useRef(null);
+  const { addToCart } = useCart();
 
   const handleMouseEnter = () => {
     const video = videoRef.current;
@@ -116,22 +118,32 @@ export default function FoodCard({ item, onLike, onSave }) {
             </p>
           </div>
 
-          <button
-            type="button"
-            onClick={() => onLike?.(item)}
-            className={cn(
-              "flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold transition-all duration-200",
-              item.isLiked
-                ? "border-red-500/30 bg-red-500/10 text-red-500 dark:text-red-400"
-                : "border-zinc-200 bg-zinc-100 text-zinc-600 hover:border-red-500/20 hover:text-red-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:text-red-400"
-            )}
-            aria-label={item.isLiked ? "Unlike" : "Like"}
-          >
-            <Heart
-              className={cn("h-3.5 w-3.5", item.isLiked && "fill-current")}
-            />
-            {item.likeCount ?? 0}
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => onLike?.(item)}
+              className={cn(
+                "flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold transition-all duration-200",
+                item.isLiked
+                  ? "border-red-500/30 bg-red-500/10 text-red-500 dark:text-red-400"
+                  : "border-zinc-200 bg-zinc-100 text-zinc-600 hover:border-red-500/20 hover:text-red-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:text-red-400"
+              )}
+              aria-label={item.isLiked ? "Unlike" : "Like"}
+            >
+              <Heart
+                className={cn("h-3.5 w-3.5", item.isLiked && "fill-current")}
+              />
+              {item.likeCount ?? 0}
+            </button>
+            <button
+              onClick={() => addToCart(item)}
+              className="flex items-center justify-center gap-1.5 rounded-xl bg-orange-500 px-3 py-1.5 text-xs font-bold text-white shadow-md shadow-orange-500/20 transition-all hover:bg-orange-600 hover:shadow-orange-500/30 active:scale-95"
+              aria-label="Add to cart"
+            >
+              <ShoppingCart className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Add</span>
+            </button>
+          </div>
         </div>
       </div>
     </article>

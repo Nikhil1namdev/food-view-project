@@ -1,7 +1,8 @@
 import React, { useEffect, useRef } from 'react'
 import { Link, NavLink } from 'react-router-dom'
-import { Home, Bookmark, User, Store, LogOut, Sun, Moon } from 'lucide-react'
+import { Home, Bookmark, User, Store, LogOut, Sun, Moon, ShoppingBag } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
+import { useCart } from '../../hooks/useCart'
 import { useTheme } from '../../hooks/useTheme'
 import { cn } from '../../lib/utils'
 import gsap from 'gsap'
@@ -15,6 +16,7 @@ import gsap from 'gsap'
 // - Secure Context-based user login state visibility and dynamic CTA
 const Navbar = () => {
   const { isAuthenticated, role, user, logout } = useAuth()
+  const { totalItems, openCart } = useCart()
   const { toggleTheme, isDark } = useTheme()
   const navRef = useRef(null)
 
@@ -82,8 +84,24 @@ const Navbar = () => {
         </nav>
 
         {/* CTA User Area */}
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-3 sm:space-x-4">
           
+          {/* Cart Button */}
+          {role !== 'partner' && (
+            <button
+              onClick={openCart}
+              className="relative flex items-center justify-center w-9 h-9 bg-orange-500/10 dark:bg-orange-500/10 border border-orange-500/20 text-orange-600 dark:text-orange-400 hover:bg-orange-500 hover:text-white rounded-xl transition-all duration-300 cursor-pointer active:scale-95"
+              aria-label="Open Cart"
+            >
+              <ShoppingBag className="w-4 h-4" />
+              {totalItems > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-black text-white shadow-sm">
+                  {totalItems > 99 ? '99+' : totalItems}
+                </span>
+              )}
+            </button>
+          )}
+
           {/* Theme Toggle Button */}
           <button
             onClick={toggleTheme}

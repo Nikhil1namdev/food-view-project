@@ -6,27 +6,26 @@ Aapka "Food View" project ka frontend **port 5173** par chal raha tha, aur backe
 Kyunki aapka ek aur project (`job-pilot`) pehle se port 3000 par chal raha tha, toh jab aap "Food View" mein login karne ki koshish kar rahe the, tab ye ho raha tha:
 1. **Wrong Backend Call:** Aapka "Food View" frontend galti se `job-pilot` ke backend (port 3000) ko request bhej raha tha. 
 2. **Incorrect ID/Password:** Kyunki `job-pilot` ke database mein aapka Food View wala user nahi hai, isliye vo "Incorrect ID/Password" batata tha.
-3. **Google/GitHub 404 Error:** Jab aap Google/GitHub login par click karte the, frontend `http://localhost:3000/api/auth/google` par bhejta tha. Kyunki `job-pilot` mein aisi koi route bani hi nahi hai, isliye aapko 404 "This page could not be found" ki error aa rahi thi (jo aapne screenshot me dikhai).
+3. **Google/GitHub 404 Error:** Jab aap Google/GitHub login par click karte the, frontend `http://localhost:3000/api/auth/google` par bhejta tha. Kyunki `job-pilot` mein aisi koi route bani hi nahi hai, isliye aapko 404 "This page could not be found" ki error aa rahi thi.
 
-## Kya Hum Dono Project Ek Sath Chala Sakte Hai?
-**Haan, bilkul chala sakte ho!** 
-Aap 10 project bhi ek sath chala sakte ho jab tak unke port numbers alag-alag ho. Issue dono project ek sath chalane me nahi tha, issue isme tha ki aapke Food View ke code me `3000` likha hua tha, jisse vo doosre project se takra raha tha.
+## Permanent Solution Kya Hai?
+Maine backend aur frontend dono jagah URLs ko theek kar diya hai:
+1. Frontend mein saari jagah URL ko `3000` se badalkar `5000` kar diya hai. Ab frontend direct aapke Food View ke backend par hi request bhejega.
+2. Backend (`passport.js`) mein humne callback URL ko dynamically `process.env.BACKEND_URL` par set kar diya hai. Agar ye set nahi hai to by default `http://localhost:5000` lega.
 
-## Solution (Kaise Solve Kiya?)
-Mene aapke project me ye permanent fixes kiye hain:
-1. **Frontend:** Jitne bhi pages aur components the (jaise `UserLogin`, `UserRegister`, `FoodPartnerLogin`, `AuthContext`, `api.js` etc.) un sabme jaha jaha `http://localhost:3000` hardcoded tha, usko change karke `http://localhost:5000` kar diya hai. Ab frontend sahi backend (Food View wale) se baat karega.
-2. **Backend:** `backend/src/services/passport.js` me Google aur GitHub ke callback URLs bhi `3000` par the. Unko change karke `${process.env.BACKEND_URL || 'http://localhost:5000'}` kar diya hai.
+## IMPORTANT: Aapko Abhi Kya Karna Hoga?
+Google aur GitHub par login completely work kare uske liye aapko apne developer accounts par ja kar **Redirect URI update karni hogi**:
 
----
+### GitHub ke liye:
+1. GitHub Developer Settings me jayen (Settings > Developer Settings > OAuth Apps)
+2. Apni Food View App ko select karein.
+3. **Authorization callback URL** ko badal kar ye karein:
+   `http://localhost:5000/api/auth/github/callback`
 
-### ⚠️ IMPORTANT ACTION REQUIRED FROM YOU ⚠️
-Kyunki ab backend ka port 5000 ho gaya hai, **Google aur GitHub OAuth redirect URLs me mismatch aayega** agar aapne unhe update nahi kiya to. 
+### Google ke liye:
+1. Google Cloud Console me jayen (APIs & Services > Credentials).
+2. Apne OAuth 2.0 Client ID ko edit karein.
+3. **Authorized redirect URIs** me purana 3000 wala URL delete karein aur ye naya add karein:
+   `http://localhost:5000/api/auth/google/callback`
 
-Aapko Google Cloud Console aur GitHub Developer Settings me jaakar apne OAuth app ke "Authorized redirect URIs" ko update karna hoga:
-- **Google me purana URL:** `http://localhost:3000/api/auth/google/callback`
-- **Google me NAYA URL dalna hai:** `http://localhost:5000/api/auth/google/callback`
-
-- **GitHub me purana URL:** `http://localhost:3000/api/auth/github/callback`
-- **GitHub me NAYA URL dalna hai:** `http://localhost:5000/api/auth/github/callback`
-
-Ye karne ke baad aap dono projects ek sath bindaas chala sakte ho bina kisi error ke!
+Ab aap bina kisi error ke dono projects (`job-pilot` aur `Food View`) ek sath chala sakte hain!

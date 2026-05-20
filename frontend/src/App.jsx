@@ -3,6 +3,8 @@ import './App.css'
 import './styles/theme.css'
 import AppRoutes from './routes/AppRoutes'
 import { AuthProvider } from './context/AuthContext'
+import { CartProvider } from './context/CartContext'
+import CartDrawer from './components/cart/CartDrawer'
 import { useTheme } from './hooks/useTheme'
 
 import { Toaster } from 'react-hot-toast'
@@ -17,9 +19,10 @@ function App() {
 
   return (
     <AuthProvider>
-      <AppRoutes />
+      <CartProvider>
+        <AppRoutes />
       <Toaster 
-        position="top-right"
+        position="bottom-right"
         toastOptions={{
           style: {
             background: '#18181b',
@@ -38,6 +41,8 @@ function App() {
           },
         }}
       />
+      <CartDrawer />
+      </CartProvider>
     </AuthProvider>
   )
 }

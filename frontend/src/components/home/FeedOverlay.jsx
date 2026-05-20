@@ -1,15 +1,19 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
-import { Store, ArrowUpRight } from 'lucide-react'
+import { Store, ArrowUpRight, ShoppingCart } from 'lucide-react'
+import { useCart } from '../../hooks/useCart'
+import { formatPrice } from '../../lib/foodFeed'
 
 // =========================================================================
 // PREMIUM REEL DETAILS OVERLAY (FeedOverlay)
 // =========================================================================
 // Renders absolute text descriptions, titles, and partner links for each
 // vertical video. Designed with a smooth black gradient overlay base.
-const FeedOverlay = ({ name, description, foodPartner }) => {
+const FeedOverlay = ({ item }) => {
+  const { addToCart } = useCart();
+  const { name, description, foodPartner, price } = item || {};
   return (
-    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent p-6 pt-24 select-none text-white z-20 flex flex-col space-y-3.5 pr-20">
+    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent p-6 pt-24 select-none pointer-events-auto text-white z-20 flex flex-col space-y-3.5 pr-20">
       
       {/* Dynamic Merchant Tag */}
       {foodPartner && (
@@ -32,6 +36,20 @@ const FeedOverlay = ({ name, description, foodPartner }) => {
         <p className="text-xs text-zinc-300/90 font-medium line-clamp-2 leading-relaxed max-w-[280px]">
           {description || "Explore delicious bites nearby."}
         </p>
+      </div>
+
+      {/* Cart Action */}
+      <div className="flex items-center gap-3 pt-1">
+        <p className="font-heading text-lg font-black text-orange-400">
+          {formatPrice(price)}
+        </p>
+        <button 
+          onClick={(e) => { e.stopPropagation(); addToCart(item); }}
+          className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-orange-500 px-4 py-2 text-sm font-bold shadow-lg shadow-orange-500/20 transition-all hover:bg-orange-600 active:scale-95 text-white"
+        >
+          <ShoppingCart className="h-4 w-4" />
+          Add to Cart
+        </button>
       </div>
 
     </div>
