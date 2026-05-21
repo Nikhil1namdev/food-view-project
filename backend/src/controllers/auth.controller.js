@@ -2,6 +2,8 @@ const userModel = require("../models/user.model")
 const foodPartnerModel = require("../models/foodpartner.model")
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
+const sendEmail = require('../utils/sendEmail');
 
 // =========================================================================
 // REGISTER NEW PLATFORM USER (CONSUMER ROLE)
@@ -392,6 +394,134 @@ async function oauthSuccess(req, res) {
     }
 }
 
+// =========================================================================
+// FORGOT PASSWORD
+// =========================================================================
+async function forgotPassword(req, res) {
+    try {
+        const { email } = req.body;
+        if (!email) {
+            return res.status(400).json({ success: false, message: "Please provide an email address." });
+        }
+
+        const user = await userModel.findOne({ email });
+        if (!user) {
+            return res.status(404).json({ success: false, message: "No user found with this email." });
+        }
+
+        // Generate raw token
+        const resetToken = crypto.randomBytes(20).toString('hex');
+        
+        // Hash token before saving
+        user.resetPasswordToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+        user.resetPasswordExpires = Date.now() + 15 * 60 * 1000; // 15 minutes
+
+        await user.save();
+
+        const resetUrl = `http://localhost:5173/reset-password/${resetToken}`;
+        
+        const message = `
+            <h1>You have requested a password reset</h1>
+            <p>Please go to this link to reset your password:</p>
+            <a href=${resetUrl} clicktracking=off>${resetUrl}</a>
+            <p>If you didn't request this, you can ignore this email.</p>
+        `;
+
+        try {
+            await sendEmail({
+                to: user.email,
+                subject: 'Password Reset Request',
+                html: message
+            });
+
+            res.status(200).json({ success: true, message: "Email sent successfully" });
+        } catch (error) {
+            user.resetPasswordToken = undefined;
+            user.resetPasswordExpires = undefined;
+            await user.save();
+            return res.status(500).json({ success: false, message: "Email could not be sent" });
+        }
+    } catch (err) {
+        console.error("Forgot password error:", err);
+        return res.status(500).json({ success: false, message: "Internal server error" });
+    }
+}
+
+// =========================================================================
+// RESET PASSWORD
+// =========================================================================
+async function resetPassword(req, res) {
+    try {
+        // Get hashed token
+        const resetPasswordToken = crypto.createHash('sha256').update(req.params.token).digest('hex');
+
+        const user = await userModel.findOne({
+            resetPasswordToken,
+            resetPasswordExpires: { $gt: Date.now() }
+        });
+
+        if (!user) {
+            return res.status(400).json({ success: false, message: "Invalid or expired token" });
+        }
+
+        // Set new password
+        const hashedPassword = await bcrypt.hash(req.body.password, 10);
+        user.password = hashedPassword;
+        user.resetPasswordToken = undefined;
+        user.resetPasswordExpires = undefined;
+
+        await user.save();
+
+        res.status(200).json({ success: true, message: "Password updated successfully" });
+    } catch (err) {
+        console.error("Reset password error:", err);
+        return res.status(500).json({ success: false, message: "Internal server error" });
+    }
+}
+
+// =========================================================================
+// CHANGE PASSWORD
+// =========================================================================
+async function changePassword(req, res) {
+    try {
+        const { oldPassword, newPassword, confirmPassword } = req.body;
+
+        if (!oldPassword || !newPassword || !confirmPassword) {
+            return res.status(400).json({ success: false, message: "All fields are required" });
+        }
+
+        if (newPassword !== confirmPassword) {
+            return res.status(400).json({ success: false, message: "New passwords do not match" });
+        }
+
+        if (newPassword.length < 6) {
+            return res.status(400).json({ success: false, message: "New password must be at least 6 characters" });
+        }
+
+        const user = req.user;
+        if (!user.password) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "Account was created with Google/Github. Please use Forgot Password to set a local password first." 
+            });
+        }
+
+        const isMatch = await bcrypt.compare(oldPassword, user.password);
+        if (!isMatch) {
+            return res.status(400).json({ success: false, message: "Incorrect old password" });
+        }
+
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        user.password = hashedPassword;
+        await user.save();
+
+        res.status(200).json({ success: true, message: "Password changed successfully" });
+    } catch (err) {
+        console.error("Change password error:", err);
+        return res.status(500).json({ success: false, message: "Internal server error" });
+    }
+}
+
 module.exports = {
     registerUser,
     loginUser,
@@ -400,5 +530,8 @@ module.exports = {
     loginFoodPartner,
     logoutFoodPartner,
     checkAuth,
-    oauthSuccess
+    oauthSuccess,
+    forgotPassword,
+    resetPassword,
+    changePassword
 }

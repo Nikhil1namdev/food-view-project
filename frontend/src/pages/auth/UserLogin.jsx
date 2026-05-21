@@ -103,6 +103,12 @@ const UserLogin = () => {
             {...register("password")}
           />
 
+          <div className="flex justify-end">
+            <Link to="/forgot-password" className="text-xs font-semibold text-zinc-400 hover:text-orange-500 transition-colors">
+              Forgot password?
+            </Link>
+          </div>
+
           {/* Dynamic Error alert */}
           {error && (
             <div className="flex items-center space-x-2 bg-red-500/10 border border-red-500/25 p-3.5 rounded-2xl text-[11px] font-bold text-red-400 select-none animate-pulse">

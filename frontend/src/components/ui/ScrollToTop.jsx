@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { ArrowUp } from "lucide-react";
-import { cn } from "../lib/utils";
+import { cn } from "../../lib/utils";
 
+/**
+ * Reusable animated Scroll-To-Top button that fades/slides in.
+ * Operates with smooth scroll physics and handles listeners performance-safely.
+ */
 export default function ScrollToTop({ threshold = 300, className }) {
   const [isVisible, setIsVisible] = useState(false);
 
@@ -14,7 +18,10 @@ export default function ScrollToTop({ threshold = 300, className }) {
       }
     };
 
+    // Passive listener optimized for fluid scrolling frames
     window.addEventListener("scroll", handleScroll, { passive: true });
+    
+    // Garbage collection on component unmount
     return () => {
       window.removeEventListener("scroll", handleScroll);
     };

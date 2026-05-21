@@ -1,7 +1,7 @@
 import React from "react";
 import ReelFeed from "../../components/home/ReelFeed";
 import PageWrapper from "../../layouts/PageWrapper";
-import { Loader2 } from "lucide-react";
+import ReelSkeleton from "../../components/skeletons/ReelSkeleton";
 import { useFoodList } from "../../hooks/useFoodList";
 
 // =========================================================================
@@ -22,12 +22,7 @@ const Saved = () => {
   return (
     <PageWrapper className="flex flex-col h-full bg-neutral-950">
       {loading ? (
-        <div className="flex flex-col items-center justify-center min-h-[50vh] w-full text-white space-y-4">
-          <Loader2 className="w-10 h-10 text-orange-500 animate-spin" />
-          <p className="text-xs font-black tracking-widest text-neutral-500 uppercase animate-pulse">
-            Loading bookmarks...
-          </p>
-        </div>
+        <ReelSkeleton />
       ) : (
         <div className="flex-1 w-full h-[calc(100dvh-4rem)]">
           <ReelFeed

@@ -1,6 +1,7 @@
 const express = require('express');
 const authController = require("../controllers/auth.controller")
 const passport = require('passport');
+const { authUserMiddleware } = require('../middlewares/auth.middleware');
 
 const router = express.Router();
 
@@ -8,6 +9,9 @@ const router = express.Router();
 router.post('/user/register', authController.registerUser)
 router.post('/user/login', authController.loginUser)
 router.get('/user/logout', authController.logoutUser)
+router.post('/user/change-password', authUserMiddleware, authController.changePassword)
+router.post('/forgot-password', authController.forgotPassword)
+router.post('/reset-password/:token', authController.resetPassword)
 
 // food partner auth APIs
 router.post('/food-partner/register', authController.registerFoodPartner)

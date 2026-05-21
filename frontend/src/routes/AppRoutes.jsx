@@ -5,6 +5,9 @@ import ChooseRegister from '../pages/auth/ChooseRegister';
 import UserLogin from '../pages/auth/UserLogin';
 import FoodPartnerRegister from '../pages/auth/FoodPartnerRegister';
 import FoodPartnerLogin from '../pages/auth/FoodPartnerLogin';
+import ForgotPassword from '../pages/auth/ForgotPassword';
+import ResetPassword from '../pages/auth/ResetPassword';
+import ChangePassword from '../pages/auth/ChangePassword';
 import Home from '../pages/general/Home';
 import Saved from '../pages/general/Saved';
 import LandingPage from '../pages/general/LandingPage';
@@ -68,6 +71,12 @@ const AppRoutes = () => {
                 <Route path="/food-partner/login" element={
                     <GuestRoute><FoodPartnerLogin /></GuestRoute>
                 } />
+                <Route path="/forgot-password" element={
+                    <ForgotPassword />
+                } />
+                <Route path="/reset-password/:token" element={
+                    <ResetPassword />
+                } />
 
                 {/* ── PUBLIC LANDING PAGE ── */}
                 {/* Independent landing page to capture organic SEO & traffic */}
@@ -81,6 +90,7 @@ const AppRoutes = () => {
                     <Route element={<ProtectedRoute allowedRoles={['user']} />}>
                         <Route path="/feed" element={<Home />} />
                         <Route path="/saved" element={<Saved />} />
+                        <Route path="/change-password" element={<ChangePassword />} />
                     </Route>
 
                     {/* Merchant-only actions (role: 'partner') */}

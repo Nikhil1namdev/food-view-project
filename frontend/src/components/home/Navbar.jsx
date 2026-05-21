@@ -67,6 +67,16 @@ const Navbar = () => {
               >
                 Saved
               </NavLink>
+
+              <NavLink 
+                to="/change-password" 
+                className={({ isActive }) => cn(
+                  "hover:text-orange-500 transition-colors duration-200", 
+                  isActive ? "text-orange-500" : "text-neutral-600 dark:text-neutral-300"
+                )}
+              >
+                Security
+              </NavLink>
             </>
           )}
 

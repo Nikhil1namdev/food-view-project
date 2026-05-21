@@ -6,6 +6,7 @@ import ReelFeed from "../../components/home/ReelFeed";
 import FeedToolbar from "../../components/feed/FeedToolbar";
 import FoodGrid from "../../components/feed/FoodGrid";
 import FeedEmptyState from "../../components/feed/FeedEmptyState";
+import ReelSkeleton from "../../components/skeletons/ReelSkeleton";
 import { useFoodList } from "../../hooks/useFoodList";
 import { useDebouncedValue } from "../../hooks/useDebouncedValue";
 import {
@@ -111,9 +112,7 @@ const Home = () => {
         )}>
           {viewMode === "reels" ? (
             loading ? (
-              <div className="flex min-h-[50vh] items-center justify-center">
-                <div className="custom-loader" />
-              </div>
+              <ReelSkeleton />
             ) : error ? (
               <FeedEmptyState variant="error" onRetry={refetch} />
             ) : foods.length === 0 ? (

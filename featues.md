@@ -435,3 +435,43 @@
 * Real-time architecture
 * Scalable folder structure
 * Documentation-first development
+
+
+
+## 16. Forgot Password & Reset Password 🔐
+
+### Features
+
+* Secure forgot password flow
+* Reset password using email link
+* Secure token generation using crypto
+* Hashed reset token storage
+* Token expiry system
+* Email integration using Resend
+* Reset password page
+* Password validation
+* Success & error toast notifications
+* Loading states
+* Modern responsive UI
+* Security-focused implementation
+* Proper backend architecture
+* Industry-standard authentication flow
+
+---
+
+## 17. Change Password 🔑
+
+### Features
+
+* Logged-in user password change
+* Old password verification
+* New password validation
+* Confirm password validation
+* bcrypt password hashing
+* Protected backend route
+* Toast notifications
+* Loading states
+* Show/hide password toggle
+* Modern responsive UI
+* Proper auth security flow
+* Clean backend architecture
