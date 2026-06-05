@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import { api } from '../../lib/api';
 import { toast } from 'react-hot-toast';
 import { Lock, Eye, EyeOff, Loader2, ArrowLeft } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
@@ -44,10 +44,9 @@ const ChangePassword = () => {
 
         try {
             setIsLoading(true);
-            const response = await axios.post(
-                'http://localhost:5000/api/auth/user/change-password',
-                formData,
-                { withCredentials: true }
+            const response = await api.post(
+                '/api/auth/user/change-password',
+                formData
             );
             
             toast.success(response.data.message || "Password changed successfully!");

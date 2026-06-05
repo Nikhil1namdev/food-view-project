@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { api, API_BASE_URL } from '../../lib/api';
 import { User, Mail, Lock, UserPlus, AlertCircle } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -37,14 +37,13 @@ const UserRegister = () => {
     try {
       setLoading(true);
       
-      const response = await axios.post(
-        "http://localhost:5000/api/auth/user/register", 
+      const response = await api.post(
+        "/api/auth/user/register", 
         {
           fullName: `${formData.firstName} ${formData.lastName}`,
           email: formData.email,
           password: formData.password
-        },
-        { withCredentials: true }
+        }
       );
 
       console.log("Registration success:", response.data);
@@ -65,11 +64,11 @@ const UserRegister = () => {
   };
 
   const handleGoogleLogin = () => {
-    window.location.href = "http://localhost:5000/api/auth/google";
+    window.location.href = `${API_BASE_URL}/api/auth/google`;
   };
 
   const handleGithubLogin = () => {
-    window.location.href = "http://localhost:5000/api/auth/github";
+    window.location.href = `${API_BASE_URL}/api/auth/github`;
   };
 
   return (

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import axios from "axios";
+import { api } from "../../lib/api";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import { 
@@ -112,13 +112,12 @@ const CreateFood = () => {
       formData.append("description", description);
       formData.append("video", videoFile);
 
-      // We pass the formData to Axios, setting multipart/form-data.
+      // We pass the formData to api, setting multipart/form-data.
       // The backend uses Multer to read the buffer and ImageKit to stream it.
-      await axios.post(
-        "http://localhost:5000/api/food",
+      await api.post(
+        "/api/food",
         formData,
         {
-          withCredentials: true,
           headers: {
             "Content-Type": "multipart/form-data",
           },

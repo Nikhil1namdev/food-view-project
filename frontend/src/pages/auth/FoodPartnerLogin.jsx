@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import { api } from '../../lib/api';
 import { useNavigate, Link } from 'react-router-dom';
 import { Mail, Lock, LogIn, AlertCircle } from 'lucide-react';
 import { useForm } from 'react-hook-form';
@@ -34,10 +34,9 @@ const FoodPartnerLogin = () => {
     try {
       setLoading(true);
       
-      const response = await axios.post(
-        "http://localhost:5000/api/auth/food-partner/login", 
-        formData, 
-        { withCredentials: true }
+      const response = await api.post(
+        "/api/auth/food-partner/login", 
+        formData
       );
 
       console.log("Merchant login success:", response.data);

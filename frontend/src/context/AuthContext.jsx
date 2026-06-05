@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react'
-import axios from 'axios'
+import { api } from '../lib/api'
 import toast from 'react-hot-toast'
 
 const AuthContext = createContext(null)
@@ -47,9 +47,7 @@ export const AuthProvider = ({ children }) => {
   const checkUserAuth = useCallback(async () => {
     try {
       setLoading(true)
-      const response = await axios.get("http://localhost:5000/api/auth/check-auth", {
-        withCredentials: true
-      })
+      const response = await api.get("/api/auth/check-auth")
       
       if (response.data.authenticated) {
         setUser(response.data.user)
@@ -88,10 +86,10 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true)
       const logoutUrl = currentRole === 'partner' 
-        ? "http://localhost:5000/api/auth/food-partner/logout"
-        : "http://localhost:5000/api/auth/user/logout"
+        ? "/api/auth/food-partner/logout"
+        : "/api/auth/user/logout"
 
-      await axios.get(logoutUrl, { withCredentials: true })
+      await api.get(logoutUrl)
       toast.success("Successfully logged out. See you soon!")
     } catch (error) {
       console.error("Server-side logout failed:", error)

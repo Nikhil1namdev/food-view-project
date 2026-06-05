@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { api } from '../../lib/api';
 import { Store, User, Phone, Mail, Lock, MapPin, UserPlus, AlertCircle } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -36,8 +36,8 @@ const FoodPartnerRegister = () => {
     try {
       setLoading(true);
       
-      const response = await axios.post(
-        "http://localhost:5000/api/auth/food-partner/register", 
+      const response = await api.post(
+        "/api/auth/food-partner/register", 
         {
           name: formData.businessName,
           contactName: formData.contactName,
@@ -45,8 +45,7 @@ const FoodPartnerRegister = () => {
           email: formData.email,
           password: formData.password,
           address: formData.address
-        },
-        { withCredentials: true }
+        }
       );
 
       console.log("Merchant registration success:", response.data);

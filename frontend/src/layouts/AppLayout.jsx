@@ -2,6 +2,7 @@ import React from 'react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { Home, Bookmark, PlusSquare, LogOut, Store } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
+import { useTheme } from '../hooks/useTheme'
 import { cn } from '../lib/utils'
 
 // =========================================================================
@@ -14,6 +15,7 @@ import { cn } from '../lib/utils'
 // - Clean responsive outlet grids
 const AppLayout = () => {
   const { role, user, logout, isAuthenticated } = useAuth()
+  const { isDark } = useTheme()
   const location = useLocation()
   
   // Tab reading for active state
@@ -23,19 +25,37 @@ const AppLayout = () => {
   // Check if we are actually on the dashboard profile page
   const isOnDashboardPath = location.pathname.startsWith('/food-partner/') && !location.pathname.includes('/login') && !location.pathname.includes('/register')
   
-  const getTabClass = (tabName) => {
-    const isActive = isOnDashboardPath && activeTab === tabName;
+  const getLinkClass = (isActive) => {
     return cn(
-      "flex items-center space-x-3 px-4 py-3 rounded-xl text-xs font-black tracking-tight transition-all duration-300 group hover:bg-white/5",
-      isActive ? "bg-gradient-to-r from-orange-500 to-red-600 text-white shadow-lg shadow-orange-500/10" : "text-neutral-400 hover:text-white"
+      "flex items-center space-x-3 px-4 py-3 rounded-xl text-xs font-black tracking-tight transition-all duration-300 group cursor-pointer",
+      isActive 
+        ? "bg-gradient-to-r from-orange-500 to-red-600 text-white shadow-lg shadow-orange-500/10 scale-[1.02]" 
+        : cn(
+            isDark 
+              ? "text-neutral-400 hover:text-white hover:bg-white/5" 
+              : "text-neutral-600 hover:text-orange-500 hover:bg-orange-500/5"
+          )
     )
   }
 
+  const getTabClass = (tabName) => {
+    const isActive = isOnDashboardPath && activeTab === tabName;
+    return getLinkClass(isActive);
+  }
+
   return (
-    <div className="hidden md:flex h-screen w-screen bg-neutral-950 text-white overflow-hidden font-sans">
+    <div className={cn(
+      "hidden md:flex h-screen w-screen transition-colors duration-300 overflow-hidden font-sans",
+      isDark ? "bg-[#09090b] text-neutral-100" : "bg-neutral-50 text-neutral-800"
+    )}>
       
       {/* 🖥️ LEFT SIDEBAR NAVIGATION */}
-      <aside className="w-64 h-full border-r border-white/5 bg-zinc-900/40 backdrop-blur-md p-6 flex flex-col justify-between select-none">
+      <aside className={cn(
+        "w-64 h-full border-r p-6 flex flex-col justify-between select-none transition-all duration-300 z-25",
+        isDark 
+          ? "border-white/5 bg-zinc-900/40 backdrop-blur-md" 
+          : "border-neutral-200/80 bg-neutral-50/90 shadow-md shadow-neutral-100/30"
+      )}>
         
         <div className="flex flex-col space-y-8">
           {/* Brand Logo */}
@@ -52,10 +72,7 @@ const AppLayout = () => {
                 <NavLink 
                   to="/feed" 
                   end 
-                  className={({ isActive }) => cn(
-                    "flex items-center space-x-3 px-4 py-3 rounded-xl text-xs font-black tracking-tight transition-all duration-300 group hover:bg-white/5",
-                    isActive ? "bg-gradient-to-r from-orange-500 to-red-600 text-white shadow-lg shadow-orange-500/10" : "text-neutral-400 hover:text-white"
-                  )}
+                  className={({ isActive }) => getLinkClass(isActive)}
                 >
                   <Home className="w-4.5 h-4.5 transition-transform duration-300 group-hover:scale-110" />
                   <span>Reels Feed</span>
@@ -63,10 +80,7 @@ const AppLayout = () => {
 
                 <NavLink 
                   to="/saved" 
-                  className={({ isActive }) => cn(
-                    "flex items-center space-x-3 px-4 py-3 rounded-xl text-xs font-black tracking-tight transition-all duration-300 group hover:bg-white/5",
-                    isActive ? "bg-gradient-to-r from-orange-500 to-red-600 text-white shadow-lg shadow-orange-500/10" : "text-neutral-400 hover:text-white"
-                  )}
+                  className={({ isActive }) => getLinkClass(isActive)}
                 >
                   <Bookmark className="w-4.5 h-4.5 transition-transform duration-300 group-hover:scale-110" />
                   <span>Saved Items</span>
@@ -86,10 +100,7 @@ const AppLayout = () => {
 
                 <NavLink 
                   to="/create-food" 
-                  className={({ isActive }) => cn(
-                    "flex items-center space-x-3 px-4 py-3 rounded-xl text-xs font-black tracking-tight transition-all duration-300 group hover:bg-white/5",
-                    isActive ? "bg-gradient-to-r from-orange-500 to-red-600 text-white shadow-lg shadow-orange-500/10" : "text-neutral-400 hover:text-white"
-                  )}
+                  className={({ isActive }) => getLinkClass(isActive)}
                 >
                   <PlusSquare className="w-4.5 h-4.5 transition-transform duration-300 group-hover:scale-110" />
                   <span>Upload Food</span>
@@ -118,8 +129,14 @@ const AppLayout = () => {
         {/* Sidebar Footer (Profile details or Exit action) */}
         <div className="space-y-4">
           {isAuthenticated && (
-            <div className="flex items-center space-x-3 bg-white/5 p-3 rounded-xl border border-white/5">
-              <div className="w-9 h-9 shrink-0 rounded-full bg-gradient-to-tr from-orange-500 to-red-500 flex items-center justify-center font-black text-xs text-white uppercase overflow-hidden border border-white/10">
+            <div className={cn(
+              "flex items-center space-x-3 p-3 rounded-xl border transition-all duration-300",
+              isDark ? "bg-white/5 border-white/5" : "bg-neutral-100/80 border-neutral-200/50"
+            )}>
+              <div className={cn(
+                "w-9 h-9 shrink-0 rounded-full bg-gradient-to-tr from-orange-500 to-red-500 flex items-center justify-center font-black text-xs text-white uppercase overflow-hidden border transition-colors duration-300",
+                isDark ? "border-white/10" : "border-orange-500/20"
+              )}>
                 {user?.avatar ? (
                   <img src={user.avatar} alt="Profile" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                 ) : (
@@ -127,10 +144,16 @@ const AppLayout = () => {
                 )}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-black text-white truncate">
+                <p className={cn(
+                  "text-xs font-black truncate transition-colors duration-300",
+                  isDark ? "text-white" : "text-neutral-800"
+                )}>
                   {user?.fullName || user?.name || "Member"}
                 </p>
-                <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider block">
+                <span className={cn(
+                  "text-[10px] font-bold uppercase tracking-wider block transition-colors duration-300",
+                  isDark ? "text-neutral-500" : "text-neutral-400"
+                )}>
                   {role}
                 </span>
               </div>
@@ -140,7 +163,10 @@ const AppLayout = () => {
           {isAuthenticated ? (
             <button 
               onClick={logout}
-              className="flex items-center space-x-3 w-full px-4 py-3 rounded-xl text-xs font-black text-red-400 transition-all duration-300 hover:bg-red-500/5 group cursor-pointer active:scale-95"
+              className={cn(
+                "flex items-center space-x-3 w-full px-4 py-3 rounded-xl text-xs font-black transition-all duration-300 group cursor-pointer active:scale-95",
+                isDark ? "text-red-400 hover:bg-red-500/5" : "text-red-500 hover:bg-red-500/10"
+              )}
             >
               <LogOut className="w-4.5 h-4.5 transition-transform duration-300 group-hover:translate-x-1" />
               <span>Exit Session</span>
@@ -148,7 +174,12 @@ const AppLayout = () => {
           ) : (
             <Link 
               to="/user/login"
-              className="flex items-center justify-center space-x-2 bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-black text-xs px-4 py-3 rounded-xl w-full text-center transition-all duration-300"
+              className={cn(
+                "flex items-center justify-center space-x-2 font-black text-xs px-4 py-3 rounded-xl w-full text-center transition-all duration-300 active:scale-95",
+                isDark 
+                  ? "bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white" 
+                  : "bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white shadow-sm shadow-orange-500/10"
+              )}
             >
               <Store className="w-4 h-4" />
               <span>Partner Login</span>
@@ -159,7 +190,10 @@ const AppLayout = () => {
       </aside>
 
       {/* 🖥️ VIEWPORT OUTLET CONTAINER */}
-      <main className="flex-1 h-full overflow-y-auto bg-neutral-950 scrollbar-none z-10">
+      <main className={cn(
+        "flex-1 h-full overflow-y-auto scrollbar-none z-10 transition-colors duration-300",
+        isDark ? "bg-[#09090b]" : "bg-neutral-50"
+      )}>
         <Outlet />
       </main>
 

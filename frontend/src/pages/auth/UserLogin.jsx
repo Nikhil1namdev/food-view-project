@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import { api, API_BASE_URL } from '../../lib/api';
 import { useNavigate, Link } from 'react-router-dom';
 import { Mail, Lock, LogIn, AlertCircle } from 'lucide-react';
 import { useForm } from 'react-hook-form';
@@ -37,11 +37,7 @@ const UserLogin = () => {
     try {
       setLoading(true);
       
-      const response = await axios.post(
-        "http://localhost:5000/api/auth/user/login", 
-        formData, 
-        { withCredentials: true }
-      );
+      const response = await api.post("/api/auth/user/login", formData);
 
       console.log("Login success:", response.data);
       toast.success("Welcome back to ByteBite! Login successful.");
@@ -61,11 +57,11 @@ const UserLogin = () => {
   };
 
   const handleGoogleLogin = () => {
-    window.location.href = "http://localhost:5000/api/auth/google";
+    window.location.href = `${API_BASE_URL}/api/auth/google`;
   };
 
   const handleGithubLogin = () => {
-    window.location.href = "http://localhost:5000/api/auth/github";
+    window.location.href = `${API_BASE_URL}/api/auth/github`;
   };
 
   return (

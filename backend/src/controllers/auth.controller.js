@@ -367,11 +367,12 @@ async function checkAuth(req, res) {
 // Triggers on verified OAuth callbacks.
 // Signs stateless JWT and returns cookie before redirecting browser to frontend home.
 async function oauthSuccess(req, res) {
+    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
     try {
         const user = req.user;
         
         if (!user) {
-            return res.redirect("http://localhost:5173/user/login?error=oauth_profile_missing");
+            return res.redirect(`${frontendUrl}/user/login?error=oauth_profile_missing`);
         }
 
         const token = jwt.sign({
@@ -387,10 +388,10 @@ async function oauthSuccess(req, res) {
         });
 
         // Redirect back to frontend home page
-        return res.redirect("http://localhost:5173/");
+        return res.redirect(`${frontendUrl}/`);
     } catch (err) {
         console.error("SSO Callback redirect error:", err);
-        return res.redirect("http://localhost:5173/user/login?error=internal_server_error");
+        return res.redirect(`${frontendUrl}/user/login?error=internal_server_error`);
     }
 }
 
@@ -418,7 +419,8 @@ async function forgotPassword(req, res) {
 
         await user.save();
 
-        const resetUrl = `http://localhost:5173/reset-password/${resetToken}`;
+        const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+        const resetUrl = `${frontendUrl}/reset-password/${resetToken}`;
         
         const message = `
             <h1>You have requested a password reset</h1>

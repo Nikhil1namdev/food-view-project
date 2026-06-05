@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, Link, useSearchParams } from 'react-router-dom'
-import axios from 'axios'
+import { api } from '../../lib/api'
 import { 
     Play, 
     MapPin, 
@@ -40,9 +40,7 @@ const Profile = () => {
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                const response = await axios.get(`http://localhost:5000/api/food-partner/${id}`, { 
-                    withCredentials: true 
-                })
+                const response = await api.get(`/api/food-partner/${id}`)
                 setProfile(response.data.foodPartner)
                 setVideos(response.data.foodPartner.foodItems || [])
             } catch (error) {

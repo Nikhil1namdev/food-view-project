@@ -20,11 +20,23 @@ router.get('/food-partner/logout', authController.logoutFoodPartner)
 
 // Google OAuth routes
 router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }))
-router.get('/google/callback', passport.authenticate('google', { session: false, failureRedirect: 'http://localhost:5173/user/login?error=oauth_failed' }), authController.oauthSuccess)
+router.get('/google/callback', (req, res, next) => {
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+  passport.authenticate('google', { 
+    session: false, 
+    failureRedirect: `${frontendUrl}/user/login?error=oauth_failed` 
+  })(req, res, next);
+}, authController.oauthSuccess)
 
 // GitHub OAuth routes
 router.get('/github', passport.authenticate('github', { scope: ['user:email'] }))
-router.get('/github/callback', passport.authenticate('github', { session: false, failureRedirect: 'http://localhost:5173/user/login?error=oauth_failed' }), authController.oauthSuccess)
+router.get('/github/callback', (req, res, next) => {
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+  passport.authenticate('github', { 
+    session: false, 
+    failureRedirect: `${frontendUrl}/user/login?error=oauth_failed` 
+  })(req, res, next);
+}, authController.oauthSuccess)
 
 // Unified Session Verification route
 router.get('/check-auth', authController.checkAuth)
