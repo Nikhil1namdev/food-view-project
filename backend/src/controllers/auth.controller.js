@@ -419,7 +419,7 @@ async function forgotPassword(req, res) {
 
         await user.save();
 
-        const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+        const frontendUrl = process.env.FRONTEND_URL || req.headers.origin || "http://localhost:5173";
         const resetUrl = `${frontendUrl}/reset-password/${resetToken}`;
         
         const message = `
