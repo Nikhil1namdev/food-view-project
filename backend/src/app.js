@@ -7,10 +7,28 @@ const foodRoutes = require("./routes/food.routes");
 const foodPartnerRoutes = require("./routes/food-partner.routes");
 const cors = require("cors");
 
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://food-view-project.vercel.app"
+];
+if (process.env.FRONTEND_URL) {
+  allowedOrigins.push(process.env.FRONTEND_URL);
+}
+
 const app = express();
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    origin: function (origin, callback) {
+      // allow requests with no origin (like mobile apps, postman, curl)
+      if (!origin) return callback(null, true);
+      
+      const isAllowed = allowedOrigins.includes(origin) || origin.endsWith(".vercel.app");
+      if (isAllowed) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
   }),
 );
