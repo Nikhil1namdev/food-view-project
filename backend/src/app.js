@@ -11,6 +11,9 @@ const allowedOrigins = [
   "http://localhost:5173",
   "https://food-view-project.vercel.app"
 ];
+// FRONTEND_URL is optional: Serves as a fallback for custom domains in the future 
+// (e.g., if we map a custom domain like bytebite.com, we can set it in Render's env variables 
+// without modifying backend code).
 if (process.env.FRONTEND_URL) {
   allowedOrigins.push(process.env.FRONTEND_URL);
 }
